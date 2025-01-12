@@ -1,5 +1,5 @@
 +++
-title = "wait, notifyAll, notify"
+title = "2. wait, notifyAll, notify"
 date = "2025-01-07"
 tags = [
     "markdown",

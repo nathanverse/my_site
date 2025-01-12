@@ -1,5 +1,5 @@
 +++
-title = "Deadlock"
+title = "4. Deadlock"
 date = "2025-01-07"
 tags = [
     "markdown",

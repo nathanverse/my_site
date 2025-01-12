@@ -1,5 +1,5 @@
 +++
-title = "Thread scheduling"
+title = "3. Thread scheduling"
 date = "2025-01-08"
 tags = [
     "markdown",
