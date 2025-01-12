@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>1. Synchronization | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="1. Synchronization" />
+<meta name="description" content="Java Synchronization
+In Java, concepts of synchronization are based on lock of objects.
+
+Adding synchronized modifier before a method: if the method is an instance method, the class instance&rsquo;s lock is acquire,
+if the method is static, the java class object&rsquo;s of the class is acquired
+Using synchronized block: Lock can be acquired on any object given
+
+Basically, you should acquire lock on the object if its states are accessed and modified by different threads." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/1.-synchronization/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="1. Synchronization">
+  <meta property="og:description" content="Java Synchronization In Java, concepts of synchronization are based on lock of objects.
+Adding synchronized modifier before a method: if the method is an instance method, the class instance’s lock is acquire, if the method is static, the java class object’s of the class is acquired Using synchronized block: Lock can be acquired on any object given Basically, you should acquire lock on the object if its states are accessed and modified by different threads.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-06T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-06T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="1. Synchronization">
+  <meta name="twitter:description" content="Java Synchronization In Java, concepts of synchronization are based on lock of objects.
+Adding synchronized modifier before a method: if the method is an instance method, the class instance’s lock is acquire, if the method is static, the java class object’s of the class is acquired Using synchronized block: Lock can be acquired on any object given Basically, you should acquire lock on the object if its states are accessed and modified by different threads.">
+
+
+
+
+  <meta itemprop="name" content="1. Synchronization">
+  <meta itemprop="description" content="Java Synchronization In Java, concepts of synchronization are based on lock of objects.
+Adding synchronized modifier before a method: if the method is an instance method, the class instance’s lock is acquire, if the method is static, the java class object’s of the class is acquired Using synchronized block: Lock can be acquired on any object given Basically, you should acquire lock on the object if its states are accessed and modified by different threads.">
+  <meta itemprop="datePublished" content="2025-01-06T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-01-06T00:00:00+00:00">
+  <meta itemprop="wordCount" content="701">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>1. Synchronization</h1>
+<p>
+  <i>
+    <time datetime='2025-01-06' pubdate>
+      06 Jan, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="java-synchronization">Java Synchronization</h1>
+<p>In Java, concepts of synchronization are based on lock of objects.</p>
+<ul>
+<li><strong>Adding synchronized modifier before a method</strong>: if the method is an instance method, the class instance&rsquo;s lock is acquire,
+if the method is static, the java class object&rsquo;s of the class is acquired</li>
+<li><strong>Using synchronized block</strong>: Lock can be acquired on any object given</li>
+</ul>
+<p>Basically, you should acquire lock on the object if its states are accessed and modified by different threads.</p>
+<p>There are typically two types of synchronization</p>
+<ul>
+<li>
+<p><strong>Client-side synchronization</strong>: Where the users of the objects, which might be shared, are responsible to
+synchronize on it, for example</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">abs</span>(<span style="color:#66d9ef">int</span><span style="color:#f92672">[]</span> values) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (values) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0; i <span style="color:#f92672">&lt;</span> values.<span style="color:#a6e22e">length</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (values<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span> <span style="color:#f92672">&lt;</span> 0)
+</span></span><span style="display:flex;"><span>                    values<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>values<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span>;
+</span></span><span style="display:flex;"><span>        } 
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>In the above method, the user of values array have to add a <code>synchronized</code> block to protect it.</p>
+</li>
+<li>
+<p><strong>Service-side synchronization</strong>: Where the author of a class needs to ensure the accesses to the class&rsquo;s state through methods
+are synchronized.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankAccount</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">long</span> number;    <span style="color:#75715e">// account number</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">long</span> balance;   <span style="color:#75715e">// current balance (in cents)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">BankAccount</span>(<span style="color:#66d9ef">long</span> initialDeposit) {
+</span></span><span style="display:flex;"><span>          balance <span style="color:#f92672">=</span> initialDeposit;
+</span></span><span style="display:flex;"><span>        }   
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">getBalance</span>() {
+</span></span><span style="display:flex;"><span>          <span style="color:#66d9ef">return</span> balance;
+</span></span><span style="display:flex;"><span>        }   
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">deposit</span>(<span style="color:#66d9ef">long</span> amount) {
+</span></span><span style="display:flex;"><span>          balance <span style="color:#f92672">+=</span> amount;
+</span></span><span style="display:flex;"><span>        }  
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// ... rest of methods ...</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div></li>
+</ul>
+<h2 id="the-need-of-operation-atomicity">The need of operation atomicity.</h2>
+<p>In some cases, there could have a synchronization issue even if you are using only synchronized objects, such as atomic objects
+which Java provided. Take a look at the following example, where a http server serving an endpoint, that return a factor values
+of a number. The endpoint also supports a cache which return the latest factors in case the next request ask factors of
+the similar value with the last request.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SynchronizedFactorizer</span> <span style="color:#66d9ef">implements</span> Servlet {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">&gt;</span> lastNumber <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">[]&gt;</span> lastFactors <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">[]&gt;</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">service</span>(ServletRequest req, ServletResponse resp) {
+</span></span><span style="display:flex;"><span>      BigInteger i <span style="color:#f92672">=</span> extractFromRequest(req);
+</span></span><span style="display:flex;"><span>      BigInteger i <span style="color:#f92672">=</span> extractFromRequest(req);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (i.<span style="color:#a6e22e">equals</span>(lastNumber.<span style="color:#a6e22e">get</span>()))
+</span></span><span style="display:flex;"><span>        encodeIntoResponse(resp, lastFactors.<span style="color:#a6e22e">get</span>()); 
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        BigInteger<span style="color:#f92672">[]</span> factors <span style="color:#f92672">=</span> factor(i); 
+</span></span><span style="display:flex;"><span>        lastNumber.<span style="color:#a6e22e">set</span>(i); 
+</span></span><span style="display:flex;"><span>        lastFactors.<span style="color:#a6e22e">set</span>(factors);
+</span></span><span style="display:flex;"><span>        encodeIntoResponse(resp, factors);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Supposed we already cache factors for a number, the following sequence of actions of two threads, thread 1 requesting factors
+for a different value, and thread 2 requesting for the same value, would cause the issue.</p>
+<ol>
+<li>The thread 1, ask if equal to its value, turn out not -&gt; proceed to update the cache.</li>
+<li>The thread 2, passing equal condition, proceed to return the factors.</li>
+<li>Thread 1 update the factors.</li>
+<li>Thread 2 return the factors which was updated by thread 1.</li>
+</ol>
+<p>The synchronization issue occurs as thread 2 doesn&rsquo;t return the correct factors. Such an issue often occurs when you need to
+coordinate states of an object, in this case <code>lastFactors</code> need to be the factors of <code>lastNumbers</code>. To address this, acquire a lock
+for the composition of check and return operation. Following is an example</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CachedFactorizer</span> <span style="color:#66d9ef">implements</span> Servlet {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> BigInteger lastNumber;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> BigInteger<span style="color:#f92672">[]</span> lastFactors;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">long</span> hits;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">long</span> cacheHits;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">getHits</span>() { <span style="color:#66d9ef">return</span> hits; }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">double</span> <span style="color:#a6e22e">getCacheHitRatio</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> (<span style="color:#66d9ef">double</span>) cacheHits <span style="color:#f92672">/</span> (<span style="color:#66d9ef">double</span>) hits;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">service</span>(ServletRequest req, ServletResponse resp) {
+</span></span><span style="display:flex;"><span>        BigInteger i <span style="color:#f92672">=</span> extractFromRequest(req);
+</span></span><span style="display:flex;"><span>        BigInteger<span style="color:#f92672">[]</span> factors <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">++</span>hits;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (i.<span style="color:#a6e22e">equals</span>(lastNumber)) {
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">++</span>cacheHits;
+</span></span><span style="display:flex;"><span>                factors <span style="color:#f92672">=</span> lastFactors.<span style="color:#a6e22e">clone</span>();
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (factors <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span>) {
+</span></span><span style="display:flex;"><span>            factors <span style="color:#f92672">=</span> factor(i);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>)  {
+</span></span><span style="display:flex;"><span>                lastNumber <span style="color:#f92672">=</span> i;
+</span></span><span style="display:flex;"><span>                lastFactors <span style="color:#f92672">=</span> factors.<span style="color:#a6e22e">clone</span>();
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        encodeIntoResponse(resp, factors);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Depending on the way you acquire lock, the performance of the system might vary. The above code block is actually a good
+approach, as it separate the calling of long-processing method <code>factors = factor(i);</code> out of the synchronized block, allowing
+thread can execute the code concurrently.</p>
+<h1 id="class-synchronization-documentation">Class synchronization documentation</h1>
+<p>As you can synchronize on any locks, this lock, fields&rsquo; lock of an instance. The documentation for synchronization approaches
+are essential, because:</p>
+<ol>
+<li>If a user want to extend your class, they would meet an issue if they lock on <code>this</code>, while your class locks on
+the private fields, leading to states could be accessible by multiple threads.</li>
+<li>The same occurs if a user of your method needs to apply client-side synchronization.</li>
+</ol>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
