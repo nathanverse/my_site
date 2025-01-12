@@ -1,6 +1,6 @@
 +++
 title = "8. Threads and Exceptions"
-date = "2025-01-06"
+date = "2025-01-12"
 tags = [
     "markdown",
     "syntax",

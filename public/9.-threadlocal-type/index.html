@@ -6,18 +6,32 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
-<title>Java Programming Language | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
-<meta name="title" content="Java Programming Language" />
-<meta name="description" content="Hugo &#43; Bear = :heart:" />
+<title>9. ThreadLocal type | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="9. ThreadLocal type" />
+<meta name="description" content="ThreadLocal allows you to store a variable that would be unique on each thread, and hence, writing
+or reading on that variable need not be synchronized.
+It comes with several dangers:
+
+Methods across classes dependent on global states in ThreadLocal.
+In case a thread is reused, such as that of a thread pool, the initial state of the thread might
+not be clean, causing unexpected behaviours for the code.
+" />
 <meta name="keywords" content="markdown,syntax," />
 
 
-<meta property="og:url" content="http://localhost:1313/blog/dev_foundation/concurrency/java_programming_language__ken_arnold/">
+<meta property="og:url" content="http://localhost:1313/9.-threadlocal-type/">
   <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
-  <meta property="og:title" content="Java Programming Language">
-  <meta property="og:description" content="Hugo &#43; Bear = :heart:">
+  <meta property="og:title" content="9. ThreadLocal type">
+  <meta property="og:description" content="ThreadLocal allows you to store a variable that would be unique on each thread, and hence, writing or reading on that variable need not be synchronized.
+It comes with several dangers:
+Methods across classes dependent on global states in ThreadLocal. In case a thread is reused, such as that of a thread pool, the initial state of the thread might not be clean, causing unexpected behaviours for the code.">
   <meta property="og:locale" content="en_US">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
     <meta property="og:image" content="http://localhost:1313/images/share.png">
 
 
@@ -25,20 +39,25 @@
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="http://localhost:1313/images/share.png">
-  <meta name="twitter:title" content="Java Programming Language">
-  <meta name="twitter:description" content="Hugo &#43; Bear = :heart:">
+  <meta name="twitter:title" content="9. ThreadLocal type">
+  <meta name="twitter:description" content="ThreadLocal allows you to store a variable that would be unique on each thread, and hence, writing or reading on that variable need not be synchronized.
+It comes with several dangers:
+Methods across classes dependent on global states in ThreadLocal. In case a thread is reused, such as that of a thread pool, the initial state of the thread might not be clean, causing unexpected behaviours for the code.">
 
 
 
 
-  <meta itemprop="name" content="Java Programming Language">
-  <meta itemprop="description" content="Hugo &#43; Bear = :heart:">
+  <meta itemprop="name" content="9. ThreadLocal type">
+  <meta itemprop="description" content="ThreadLocal allows you to store a variable that would be unique on each thread, and hence, writing or reading on that variable need not be synchronized.
+It comes with several dangers:
+Methods across classes dependent on global states in ThreadLocal. In case a thread is reused, such as that of a thread pool, the initial state of the thread might not be clean, causing unexpected behaviours for the code.">
   <meta itemprop="datePublished" content="2025-01-12T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-01-12T00:00:00+00:00">
+  <meta itemprop="wordCount" content="69">
   <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
-  <link rel="alternate" type="application/rss+xml" href="http://localhost:1313/blog/dev_foundation/concurrency/java_programming_language__ken_arnold/index.xml" title="Hugo ʕ•ᴥ•ʔ Bear Blog" />
   <style>
   body {
     font-family: Verdana, sans-serif;
@@ -231,122 +250,34 @@
 </nav>
 </header>
   <main>
+
+<h1>9. ThreadLocal type</h1>
+<p>
+  <i>
+    <time datetime='2025-01-12' pubdate>
+      12 Jan, 2025
+    </time>
+  </i>
+</p>
+
 <content>
-  
-  <ul class="blog-posts">
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-12' pubdate>
-            12 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/6.-visibility/">6. Visibility</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-12' pubdate>
-            12 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/7.-thread-management/">7. Thread management</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-12' pubdate>
-            12 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/8.-threads-and-exceptions/">8. Threads and Exceptions</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-12' pubdate>
-            12 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/9.-threadlocal-type/">9. ThreadLocal type</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-08' pubdate>
-            08 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/3.-thread-scheduling/">3. Thread scheduling</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-07' pubdate>
-            07 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/2.-wait-notifyall-notify/">2. wait, notifyAll, notify</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-07' pubdate>
-            07 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/4.-deadlock/">4. Deadlock</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-07' pubdate>
-            07 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/5.-thread-terminnation/">5. Thread terminnation</a>
-    </li>
-    
-    <li>
-      <span>
-        <i>
-          <time datetime='2025-01-06' pubdate>
-            06 Jan, 2025
-          </time>
-        </i>
-      </span>
-      <a href="http://localhost:1313/1.-synchronization/">1. Synchronization</a>
-    </li>
-    
-  </ul>
-  
-    <small>
-      <div>
-        
-        <a href="http://localhost:1313/blog/markdown/">#Markdown</a>&nbsp;
-        
-        <a href="http://localhost:1313/blog/syntax/">#Syntax</a>&nbsp;
-        
-      </div>
-    </small>
-    
+  <p><code>ThreadLocal</code> allows you to store a variable that would be unique on each thread, and hence, writing
+or reading on that variable need not be synchronized.</p>
+<p>It comes with several dangers:</p>
+<ol>
+<li>Methods across classes dependent on global states in <code>ThreadLocal</code>.</li>
+<li>In case a thread is reused, such as that of a thread pool, the initial state of the thread might
+not be clean, causing unexpected behaviours for the code.</li>
+</ol>
+
 </content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
 
   </main>
   <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>

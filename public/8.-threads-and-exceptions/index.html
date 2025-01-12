@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>8. Threads and Exceptions | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="8. Threads and Exceptions" />
+<meta name="description" content="Threads and exceptions
+A thread will be terminated if it meets an uncaught exception. The uncaught exception is usually the sign of a serious error, their
+occurrence needs to be tracked in some way. To enable this, every thread can have associated with it an instance of UncaughtExceptionHandler
+which has a method:
+public void uncaughtException(Thread thr, Throwable exc);
+that can handle the exception, and the thread throws exception.
+When the thread meets an uncaught exception. Following will happen." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/8.-threads-and-exceptions/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="8. Threads and Exceptions">
+  <meta property="og:description" content="Threads and exceptions A thread will be terminated if it meets an uncaught exception. The uncaught exception is usually the sign of a serious error, their occurrence needs to be tracked in some way. To enable this, every thread can have associated with it an instance of UncaughtExceptionHandler which has a method:
+public void uncaughtException(Thread thr, Throwable exc); that can handle the exception, and the thread throws exception.
+When the thread meets an uncaught exception. Following will happen.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="8. Threads and Exceptions">
+  <meta name="twitter:description" content="Threads and exceptions A thread will be terminated if it meets an uncaught exception. The uncaught exception is usually the sign of a serious error, their occurrence needs to be tracked in some way. To enable this, every thread can have associated with it an instance of UncaughtExceptionHandler which has a method:
+public void uncaughtException(Thread thr, Throwable exc); that can handle the exception, and the thread throws exception.
+When the thread meets an uncaught exception. Following will happen.">
+
+
+
+
+  <meta itemprop="name" content="8. Threads and Exceptions">
+  <meta itemprop="description" content="Threads and exceptions A thread will be terminated if it meets an uncaught exception. The uncaught exception is usually the sign of a serious error, their occurrence needs to be tracked in some way. To enable this, every thread can have associated with it an instance of UncaughtExceptionHandler which has a method:
+public void uncaughtException(Thread thr, Throwable exc); that can handle the exception, and the thread throws exception.
+When the thread meets an uncaught exception. Following will happen.">
+  <meta itemprop="datePublished" content="2025-01-12T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-01-12T00:00:00+00:00">
+  <meta itemprop="wordCount" content="343">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>8. Threads and Exceptions</h1>
+<p>
+  <i>
+    <time datetime='2025-01-12' pubdate>
+      12 Jan, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="threads-and-exceptions">Threads and exceptions</h1>
+<p>A thread will be terminated if it meets an uncaught exception. The uncaught exception is usually the sign of a serious error, their
+occurrence needs to be tracked in some way. To enable this, every thread can have associated with it an instance of <code>UncaughtExceptionHandler</code>
+which has a method:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">uncaughtException</span>(Thread thr, Throwable exc);
+</span></span></code></pre></div><p>that can handle the exception, and the thread throws exception.</p>
+<p>When the thread meets an uncaught exception. Following will happen.</p>
+<ol>
+<li>Get <code>UncaughtExceptionHandler</code> handler of the thread, which can be set through <code>setUncaughtExceptionHandler</code> and call <code>uncaughtException()</code>/</li>
+<li>If the handler is not set, the <code>ThreadGroup</code> of the thread is returned, in this case
+<ol>
+<li><code>uncaughtException()</code> will be called on the handler of that <code>ThreadGroup</code> or its father groups.</li>
+<li>In case no parent <code>ThreadGroup</code> has the handler, handler will be taken from the static method <code>Thread.getdefaultUncaughtExceptionHandler</code></li>
+<li>In case <code>Thread.getdefaultUncaughtExceptionHandler</code> returns nothing, the stack trace will of the exception will be printed.</li>
+</ol>
+</li>
+<li>If thread is terminated before <code>getUncaughtExceptionHandler</code> is called, the method will return <code>null</code>.</li>
+</ol>
+<p>Therefore, you can control the handling of uncaught exceptions, by:</p>
+<ul>
+<li>At the system level, by setting a default handler using the static Thread class method setDefaultUncaughtExceptionHandler. This operation is security checked to ensure the application has permission to control this.</li>
+<li>At the group level, by extending ThreadGroup and overriding it&rsquo;s definition of uncaughtException.</li>
+<li>At the thread level, by invoking setUncaughtExceptionHandler on that thread.</li>
+</ul>
+<p>Therefore, if there is something that make your code not print uncaught exceptions of the thread, look at its handler.</p>
+<h2 id="dont-call-stop">Don&rsquo;t call <code>stop()</code></h2>
+<p>Like <code>interrupt</code>, <code>Thread.stop()</code> is used for terminate thread, there are several differences:</p>
+<ol>
+<li>The thread throws <code>ThreadDepth</code> exception, unlike <code>interrupt</code> which assign a flag on the current thread.</li>
+<li>The terminated thread will release the lock immediately when it is executing the code in synchronized block.</li>
+</ol>
+<p>This causes several issues:</p>
+<ol>
+<li>If methods on the upper stack catch the exception and then not rethrow, the code will be malicious.</li>
+<li>As it aborts immediately in the synchronized block, the code can corrupt when just partially complete the current operation.</li>
+</ol>
+<p>So don&rsquo;t use <code>stop()</code>.</p>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

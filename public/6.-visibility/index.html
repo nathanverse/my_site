@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>6. Visibility | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="6. Visibility" />
+<meta name="description" content="Visibility
+A field, or a variable accordingly to what called memory model followed by Java Programming might have a set of
+values that can be returned, which might be counterintuitive to developers. For example, consider this code
+A thread which modify the field
+public void updateCurrent() {
+    currentValue = (int) Math.random();
+}
+UI thread
+currentValue = 5;
+for (;;) {
+    display.showValue(currentValue);
+    Thread.sleep(1000); // wait 1 second
+}
+In the above code, the write thread might add a lot of values that can be returned to the field currentValue. In
+this case, memory model will choose to return the initial values because it didn&rsquo;t detect any method of the
+UI thread modify currentValue, which results in values modified are not updated on the UI thread, meaning not
+visible." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/6.-visibility/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="6. Visibility">
+  <meta property="og:description" content="Visibility A field, or a variable accordingly to what called memory model followed by Java Programming might have a set of values that can be returned, which might be counterintuitive to developers. For example, consider this code
+A thread which modify the field public void updateCurrent() { currentValue = (int) Math.random(); } UI thread currentValue = 5; for (;;) { display.showValue(currentValue); Thread.sleep(1000); // wait 1 second } In the above code, the write thread might add a lot of values that can be returned to the field currentValue. In this case, memory model will choose to return the initial values because it didn’t detect any method of the UI thread modify currentValue, which results in values modified are not updated on the UI thread, meaning not visible.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="6. Visibility">
+  <meta name="twitter:description" content="Visibility A field, or a variable accordingly to what called memory model followed by Java Programming might have a set of values that can be returned, which might be counterintuitive to developers. For example, consider this code
+A thread which modify the field public void updateCurrent() { currentValue = (int) Math.random(); } UI thread currentValue = 5; for (;;) { display.showValue(currentValue); Thread.sleep(1000); // wait 1 second } In the above code, the write thread might add a lot of values that can be returned to the field currentValue. In this case, memory model will choose to return the initial values because it didn’t detect any method of the UI thread modify currentValue, which results in values modified are not updated on the UI thread, meaning not visible.">
+
+
+
+
+  <meta itemprop="name" content="6. Visibility">
+  <meta itemprop="description" content="Visibility A field, or a variable accordingly to what called memory model followed by Java Programming might have a set of values that can be returned, which might be counterintuitive to developers. For example, consider this code
+A thread which modify the field public void updateCurrent() { currentValue = (int) Math.random(); } UI thread currentValue = 5; for (;;) { display.showValue(currentValue); Thread.sleep(1000); // wait 1 second } In the above code, the write thread might add a lot of values that can be returned to the field currentValue. In this case, memory model will choose to return the initial values because it didn’t detect any method of the UI thread modify currentValue, which results in values modified are not updated on the UI thread, meaning not visible.">
+  <meta itemprop="datePublished" content="2025-01-12T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-01-12T00:00:00+00:00">
+  <meta itemprop="wordCount" content="260">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>6. Visibility</h1>
+<p>
+  <i>
+    <time datetime='2025-01-12' pubdate>
+      12 Jan, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="visibility">Visibility</h1>
+<p>A field, or a variable accordingly to what called <code>memory model</code> followed by <code>Java Programming</code> might have a set of
+values that can be returned, which might be counterintuitive to developers. For example, consider this code</p>
+<h4 id="a-thread-which-modify-the-field">A thread which modify the field</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">updateCurrent</span>() {
+</span></span><span style="display:flex;"><span>    currentValue <span style="color:#f92672">=</span> (<span style="color:#66d9ef">int</span>) Math.<span style="color:#a6e22e">random</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 id="ui-thread">UI thread</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>currentValue <span style="color:#f92672">=</span> 5;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (;;) {
+</span></span><span style="display:flex;"><span>    display.<span style="color:#a6e22e">showValue</span>(currentValue);
+</span></span><span style="display:flex;"><span>    Thread.<span style="color:#a6e22e">sleep</span>(1000); <span style="color:#75715e">// wait 1 second</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>In the above code, the write thread might add a lot of values that can be returned to the field <code>currentValue</code>. In
+this case, <code>memory model</code> will choose to return the initial values because it didn&rsquo;t detect any method of the
+UI thread modify <code>currentValue</code>, which results in values modified are not updated on the UI thread, meaning not
+visible.</p>
+<p>To make it visible, there are two methods:</p>
+<ol>
+<li>Wrap code with <code>synchronized</code> method or block.</li>
+<li>Declare the field as <code>volatile</code>.</li>
+</ol>
+<h2 id="the-happens-before-relationship">The happens-before relationship</h2>
+<p>In the following image, although the <code>data</code> references are not synchronized, read from <strong>thread-2</strong> still see
+data updated from <strong>thread-1</strong> if <code>dataReady</code> return <code>true</code>. This is because the <code>dataReady</code> is volatile. This
+phenomenon is called <code>happens-before</code>. The order of execution of threads, might affect the visibility of a variable
+from another thread.</p>
+<p><img src="img_1.png" alt="img_1.png"></p>
+<h2 id="final-fields-and-security">Final fields and security</h2>
+<p>There is a myth among developers that a final field doesn&rsquo;t need to be synchronized, because they assume that the initialization of the field done by one thread synchronizes with the reading process done by another thread. This is not be the case
+, therefore synchronization tools must be used here to ensure visibility.</p>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

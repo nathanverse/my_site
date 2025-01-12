@@ -1,6 +1,6 @@
 +++
 title = "6. Visibility"
-date = "2025-01-08"
+date = "2025-01-12"
 tags = [
     "markdown",
     "syntax",
@@ -42,6 +42,7 @@ In the following image, although the `data` references are not synchronized, rea
 data updated from **thread-1** if `dataReady` return `true`. This is because the `dataReady` is volatile. This
 phenomenon is called `happens-before`. The order of execution of threads, might affect the visibility of a variable 
 from another thread.
+
 ![img_1.png](img_1.png)
 
 ## Final fields and security

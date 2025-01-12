@@ -10,32 +10,46 @@
     <lastBuildDate>Wed, 08 Jan 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/markdown/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Thread scheduling</title>
-      <link>http://localhost:1313/thread-scheduling/</link>
+      <title>3. Thread scheduling</title>
+      <link>http://localhost:1313/3.-thread-scheduling/</link>
       <pubDate>Wed, 08 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/thread-scheduling/</guid>
+      <guid>http://localhost:1313/3.-thread-scheduling/</guid>
       <description>&lt;p&gt;Threads perform tasks, which have priority itself. Therefore, threads usually have a priority number associated to it. A thread is inactive when:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In call a block operation, &lt;code&gt;wait()&lt;/code&gt;, &lt;code&gt;sleep()&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;It is preempted, meaning the thread gives slot for another thread to run (a thread with higher priority, or because the current CPU cycles the current&#xA;thread allowed to use is exceeded)&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;strong&gt;⚠️ Warning:&lt;/strong&gt;&#xA;Use priority only to affect scheduling policy for efficiency. Do not rely on thread priority for algorithm correctness. Attempting to write&#xA;not thread-safe code by assuming the current thread can execute exclusively with higher priority, while there are other lower-prioritized threads&#xA;access to that code, would potentially fail.&lt;/p&gt;</description>
     </item>
     <item>
-      <title>Deadlock</title>
-      <link>http://localhost:1313/deadlock/</link>
+      <title>6. Visibility</title>
+      <link>http://localhost:1313/6.-visibility/</link>
+      <pubDate>Wed, 08 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/6.-visibility/</guid>
+      <description>&lt;h1 id=&#34;visibility&#34;&gt;Visibility&lt;/h1&gt;&#xA;&lt;p&gt;A field, or a variable accordingly to what called &lt;code&gt;memory model&lt;/code&gt; followed by &lt;code&gt;Java Programming&lt;/code&gt; might have a set of&#xA;values that can be returned, which might be counterintuitive to developers. For example, consider this code&lt;/p&gt;&#xA;&lt;h4 id=&#34;a-thread-which-modify-the-field&#34;&gt;A thread which modify the field&lt;/h4&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;updateCurrent&lt;/span&gt;() {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    currentValue &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;) Math.&lt;span style=&#34;color:#a6e22e&#34;&gt;random&lt;/span&gt;();&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;ui-thread&#34;&gt;UI thread&lt;/h4&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;currentValue &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; 5;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (;;) {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    display.&lt;span style=&#34;color:#a6e22e&#34;&gt;showValue&lt;/span&gt;(currentValue);&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    Thread.&lt;span style=&#34;color:#a6e22e&#34;&gt;sleep&lt;/span&gt;(1000); &lt;span style=&#34;color:#75715e&#34;&gt;// wait 1 second&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above code, the write thread might add a lot of values that can be returned to the field &lt;code&gt;currentValue&lt;/code&gt;. In&#xA;this case, &lt;code&gt;memory model&lt;/code&gt; will choose to return the initial values because it didn&amp;rsquo;t detect any method of the&#xA;UI thread modify &lt;code&gt;currentValue&lt;/code&gt;, which results in values modified are not updated on the UI thread, meaning not&#xA;visible.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>7. Thread management</title>
+      <link>http://localhost:1313/7.-thread-management/</link>
+      <pubDate>Wed, 08 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/7.-thread-management/</guid>
+      <description>&lt;h1 id=&#34;thread-management&#34;&gt;Thread management&lt;/h1&gt;&#xA;&lt;p&gt;It is useful to group several threads into a unit, and if necessary, do:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Interrupt all threads in a group at once.&lt;/li&gt;&#xA;&lt;li&gt;Placing a limit on the maximum priority of threads in a group.&lt;/li&gt;&#xA;&lt;li&gt;Only access to certain files.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;A thread group can be contained within another thread group, providing a hierarchy originating with system thread&#xA;group. A thread in a group can modify threads in that group, and threads in children groups. By modification, it&#xA;means invoking any method that could affect a thread&amp;rsquo;s behavior such as changing its priority, or interrupting it.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>2. wait, notifyAll, notify</title>
+      <link>http://localhost:1313/2.-wait-notifyall-notify/</link>
       <pubDate>Tue, 07 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/deadlock/</guid>
+      <guid>http://localhost:1313/2.-wait-notifyall-notify/</guid>
+      <description>&lt;h1 id=&#34;wait-notifyall-notify&#34;&gt;wait, notifyAll, notify&lt;/h1&gt;&#xA;&lt;p&gt;In some circumstances, you might want a thread to notify another thread to do its work when some condition occurs. Example can be, you&#xA;have a &lt;code&gt;Print&lt;/code&gt; class, where people can add &lt;code&gt;PrintJob&lt;/code&gt;. You would to model thread like&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;A thread to receive job.&lt;/li&gt;&#xA;&lt;li&gt;A thread to do the job.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;This model is efficient, because clients could receive a return immediately, and wait until their jobs get done.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>4. Deadlock</title>
+      <link>http://localhost:1313/4.-deadlock/</link>
+      <pubDate>Tue, 07 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/4.-deadlock/</guid>
       <description>&lt;p&gt;Deadlock is a phenomenon where two threads attempt to acquire two different objects&amp;rsquo; locks which can never be released because the locks are being&#xA;acquired by the other thread. This is well-known concept, I just put a code where deadlocks can be occurred, if you can detect&#xA;the sequences the deadlock can occur, you already grasped this concept well. Supposed we create two object&#xA;&lt;code&gt;Friendly&lt;/code&gt;, assigned their partners, and call &lt;code&gt;hug&lt;/code&gt; of each object on each thread:&lt;/p&gt;</description>
     </item>
     <item>
-      <title>Thread terminnation</title>
-      <link>http://localhost:1313/thread-terminnation/</link>
+      <title>5. Thread terminnation</title>
+      <link>http://localhost:1313/5.-thread-terminnation/</link>
       <pubDate>Tue, 07 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/thread-terminnation/</guid>
-      <description>&lt;p&gt;A thread terminates when:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The run method returns normally.&lt;/li&gt;&#xA;&lt;li&gt;The run method completes abruptly.&lt;/li&gt;&#xA;&lt;li&gt;The application terminates.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;When a thread is terminated, all locks must be released, otherwise it would make other threads to wait forever.&lt;/p&gt;&#xA;&lt;p&gt;There is some case you would want a thread to take control the CPU for while, and then cancel it if you want.&#xA;For example, imagine a user &lt;code&gt;Cancel&lt;/code&gt; button is triggered while another thread is in a transaction,&#xA;making request to the database. You&amp;rsquo;d prefer the thread would be canceled after completely returning from the&#xA;transaction. In that case, following pattern is popular.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>wait, notifyAll, notify</title>
-      <link>http://localhost:1313/wait-notifyall-notify/</link>
-      <pubDate>Tue, 07 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/wait-notifyall-notify/</guid>
-      <description>&lt;h1 id=&#34;wait-notifyall-notify&#34;&gt;wait, notifyAll, notify&lt;/h1&gt;&#xA;&lt;p&gt;In some circumstances, you might want a thread to notify another thread to do its work when some condition occurs. Example can be, you&#xA;have a &lt;code&gt;Print&lt;/code&gt; class, where people can add &lt;code&gt;PrintJob&lt;/code&gt;. You would to model thread like&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;A thread to receive job.&lt;/li&gt;&#xA;&lt;li&gt;A thread to do the job.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;This model is efficient, because clients could receive a return immediately, and wait until their jobs get done.&lt;/p&gt;</description>
+      <guid>http://localhost:1313/5.-thread-terminnation/</guid>
+      <description>&lt;h1 id=&#34;terminate-threads&#34;&gt;Terminate threads&lt;/h1&gt;&#xA;&lt;p&gt;A thread terminates when:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The run method returns normally.&lt;/li&gt;&#xA;&lt;li&gt;The run method completes abruptly.&lt;/li&gt;&#xA;&lt;li&gt;The application terminates.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;When a thread is terminated, all locks must be released, otherwise it would make other threads to wait forever.&lt;/p&gt;&#xA;&lt;p&gt;There is some case you would want a thread to take control the CPU for while, and then cancel it if you want.&#xA;For example, imagine a user &lt;code&gt;Cancel&lt;/code&gt; button is triggered while another thread is in a transaction,&#xA;making request to the database. You&amp;rsquo;d prefer the thread would be canceled after completely returning from the&#xA;transaction. In that case, following pattern is popular.&lt;/p&gt;</description>
     </item>
     <item>
       <title>My New Post</title>
@@ -50,6 +64,20 @@
       <pubDate>Mon, 06 Jan 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/1.-synchronization/</guid>
       <description>&lt;h1 id=&#34;java-synchronization&#34;&gt;Java Synchronization&lt;/h1&gt;&#xA;&lt;p&gt;In Java, concepts of synchronization are based on lock of objects.&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Adding synchronized modifier before a method&lt;/strong&gt;: if the method is an instance method, the class instance&amp;rsquo;s lock is acquire,&#xA;if the method is static, the java class object&amp;rsquo;s of the class is acquired&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Using synchronized block&lt;/strong&gt;: Lock can be acquired on any object given&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Basically, you should acquire lock on the object if its states are accessed and modified by different threads.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>8. Threads and Exceptions</title>
+      <link>http://localhost:1313/8.-threads-and-exceptions/</link>
+      <pubDate>Mon, 06 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/8.-threads-and-exceptions/</guid>
+      <description>&lt;h1 id=&#34;threads-and-exceptions&#34;&gt;Threads and exceptions&lt;/h1&gt;&#xA;&lt;p&gt;A thread will be terminated if it meets an uncaught exception. The uncaught exception is usually the sign of a serious error, their&#xA;occurrence needs to be tracked in some way. To enable this, every thread can have associated with it an instance of &lt;code&gt;UncaughtExceptionHandler&lt;/code&gt;&#xA;which has a method:&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;uncaughtException&lt;/span&gt;(Thread thr, Throwable exc);&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;that can handle the exception, and the thread throws exception.&lt;/p&gt;&#xA;&lt;p&gt;When the thread meets an uncaught exception. Following will happen.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>9. ThreadLocal type</title>
+      <link>http://localhost:1313/9.-threadlocal-type/</link>
+      <pubDate>Mon, 06 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/9.-threadlocal-type/</guid>
+      <description>&lt;p&gt;&lt;code&gt;ThreadLocal&lt;/code&gt; allows you to store a variable that would be unique on each thread, and hence, writing&#xA;or reading on that variable need not be synchronized.&lt;/p&gt;&#xA;&lt;p&gt;It comes with several dangers:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Methods across classes dependent on global states in &lt;code&gt;ThreadLocal&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;In case a thread is reused, such as that of a thread pool, the initial state of the thread might&#xA;not be clean, causing unexpected behaviours for the code.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
   </channel>
 </rss>

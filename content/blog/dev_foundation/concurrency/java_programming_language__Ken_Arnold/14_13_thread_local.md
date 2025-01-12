@@ -1,6 +1,6 @@
 +++
 title = "9. ThreadLocal type"
-date = "2025-01-06"
+date = "2025-01-12"
 tags = [
     "markdown",
     "syntax",
