@@ -294,7 +294,7 @@ visible.</p>
 data updated from <strong>thread-1</strong> if <code>dataReady</code> return <code>true</code>. This is because the <code>dataReady</code> is volatile. This
 phenomenon is called <code>happens-before</code>. The order of execution of threads, might affect the visibility of a variable
 from another thread.</p>
-<p><img src="visibility.png" alt="img"></p>
+<p><img src="/visibility.png" alt="img"></p>
 <h2 id="final-fields-and-security">Final fields and security</h2>
 <p>There is a myth among developers that a final field doesn&rsquo;t need to be synchronized, because they assume that the initialization of the field done by one thread synchronizes with the reading process done by another thread. This is not be the case
 , therefore synchronization tools must be used here to ensure visibility.</p>

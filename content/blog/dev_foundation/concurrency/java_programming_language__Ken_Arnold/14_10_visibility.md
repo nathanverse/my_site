@@ -43,7 +43,7 @@ data updated from **thread-1** if `dataReady` return `true`. This is because the
 phenomenon is called `happens-before`. The order of execution of threads, might affect the visibility of a variable 
 from another thread.
 
-![img](/static/visibility.png)
+![img](/visibility.png)
 
 ## Final fields and security
 There is a myth among developers that a final field doesn't need to be synchronized, because they assume that the initialization of the field done by one thread synchronizes with the reading process done by another thread. This is not be the case
