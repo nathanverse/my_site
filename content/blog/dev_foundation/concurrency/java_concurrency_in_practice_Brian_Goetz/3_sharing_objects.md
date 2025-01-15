@@ -163,4 +163,55 @@ This way, the latest factors are ensured to not be altered by another thread, on
 Removing the need of using lock, which can enhance the system performance, as the cost of allocation memory is typically cheaper.
 
 # 3. Safe publication
-## 3.1 Safe Publication Idioms
+## 3.1. Improper publication
+Because of the visibility problem, when a thread write to a field, multiple values could be returned, leading the program to the inconsistent
+state. Look at following code:
+
+```java
+// Unsafe publication
+public class SomeClass{
+    public Holder holder;
+    public void initialize() {
+        holder = new Holder(42);
+    }
+}
+
+public class Holder {
+    private int n;
+    public Holder(int n) { this.n = n; }
+    public void assertSanity() {
+        if (n != n)
+            throw new AssertionError("This statement is false.");
+        } 
+    }
+```
+
+The field `holder` of the class, due to Java Memory models, might have many values to return, each observable by different threads. 
+You can possibly see the `assertSanity` throw errors, which is absurd.
+
+To avoid this, there some rules for you to publish the field safely
+
+## 3.2. Safe Publication Idioms
+To publish an object safely, both the reference to the object and the object's state must be made visible 
+to other threads at the same time. A properly constructed object can be safely published by:
++ Initializing an object reference from a static initializer: Static initializers are executed by the JVM at 
+class initialization time; because of internal synchronization in the JVM, 
+this mechanism is guaranteed to safely publish any objects initialized in this way
++ Storing a reference to it into a volatile field or AtomicReference.
++ Storing a reference to it into a final field of a properly constructed object.
++ Storing a reference to it into a field that is properly guarded by a lock
+
+> Java library supports some classes that guarantee you safely publish the object.
+> *Hashtable, synchronizedMap, or Concurrent-Map*  for example.
+
+## 3.3. Mutable objects 
+The publication requirements to ensure thread-safety for an object depend on its mutability:
++ Immutable objects must be safely published; 
++ Mutable objects must be safely published, and must be either thread‐safe or guarded by a lock.
+
+## 3.4. Sharing objects safely
+Whenever you acquire a reference to an object, you should know what you are allowed to do with it. 
++ Do you need to acquire a lock before using it? 
++ Are you allowed to modify its state, or only to read it? 
+Many concurrency errors stem from failing to understand these "rules of engagement" for a shared object.
+When you publish an object, you should document how the object can be accessed.

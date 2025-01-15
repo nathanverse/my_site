@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>1. Sharing Objects | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="1. Sharing Objects" />
+<meta name="description" content="1. Publication and escape
+Making an object available to code outside its concurrent scope is call publishing. There are multiple ways
+to publish an object in a class:
+
+Return its reference from a non-private method.
+Passing its reference to a method in another class.
+
+An object that is published when it shouldn&rsquo;t have been is said to have escaped. Following are some examples
+Publish an object through static fields.
+public static Set&lt;Secret&gt; knownSecrets;
+public void initialize() {
+    knownSecrets = new HashSet&lt;Secret&gt;();
+}
+Publish through return statement
+class UnsafeStates {
+    private String[] states = new String[] {
+        &#34;AK&#34;, &#34;AL&#34; ...
+    };
+    public String[] getStates() { return states; }
+}
+An object being published might further publish other objects which are its non-private fields." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/1.-sharing-objects/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="1. Sharing Objects">
+  <meta property="og:description" content="1. Publication and escape Making an object available to code outside its concurrent scope is call publishing. There are multiple ways to publish an object in a class:
+Return its reference from a non-private method. Passing its reference to a method in another class. An object that is published when it shouldn’t have been is said to have escaped. Following are some examples
+Publish an object through static fields. public static Set&lt;Secret&gt; knownSecrets; public void initialize() { knownSecrets = new HashSet&lt;Secret&gt;(); } Publish through return statement class UnsafeStates { private String[] states = new String[] { &#34;AK&#34;, &#34;AL&#34; ... }; public String[] getStates() { return states; } } An object being published might further publish other objects which are its non-private fields.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-06T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-06T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="1. Sharing Objects">
+  <meta name="twitter:description" content="1. Publication and escape Making an object available to code outside its concurrent scope is call publishing. There are multiple ways to publish an object in a class:
+Return its reference from a non-private method. Passing its reference to a method in another class. An object that is published when it shouldn’t have been is said to have escaped. Following are some examples
+Publish an object through static fields. public static Set&lt;Secret&gt; knownSecrets; public void initialize() { knownSecrets = new HashSet&lt;Secret&gt;(); } Publish through return statement class UnsafeStates { private String[] states = new String[] { &#34;AK&#34;, &#34;AL&#34; ... }; public String[] getStates() { return states; } } An object being published might further publish other objects which are its non-private fields.">
+
+
+
+
+  <meta itemprop="name" content="1. Sharing Objects">
+  <meta itemprop="description" content="1. Publication and escape Making an object available to code outside its concurrent scope is call publishing. There are multiple ways to publish an object in a class:
+Return its reference from a non-private method. Passing its reference to a method in another class. An object that is published when it shouldn’t have been is said to have escaped. Following are some examples
+Publish an object through static fields. public static Set&lt;Secret&gt; knownSecrets; public void initialize() { knownSecrets = new HashSet&lt;Secret&gt;(); } Publish through return statement class UnsafeStates { private String[] states = new String[] { &#34;AK&#34;, &#34;AL&#34; ... }; public String[] getStates() { return states; } } An object being published might further publish other objects which are its non-private fields.">
+  <meta itemprop="datePublished" content="2025-01-06T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-01-06T00:00:00+00:00">
+  <meta itemprop="wordCount" content="660">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>1. Sharing Objects</h1>
+<p>
+  <i>
+    <time datetime='2025-01-06' pubdate>
+      06 Jan, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="1-publication-and-escape">1. Publication and escape</h1>
+<p>Making an object available to code outside its concurrent scope is call publishing. There are multiple ways
+to publish an object in a class:</p>
+<ol>
+<li>Return its reference from a non-private method.</li>
+<li>Passing its reference to a method in another class.</li>
+</ol>
+<p>An object that is published when it shouldn&rsquo;t have been is said to have escaped. Following are some examples</p>
+<h4 id="publish-an-object-through-static-fields">Publish an object through static fields.</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> Set<span style="color:#f92672">&lt;</span>Secret<span style="color:#f92672">&gt;</span> knownSecrets;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">initialize</span>() {
+</span></span><span style="display:flex;"><span>    knownSecrets <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HashSet<span style="color:#f92672">&lt;</span>Secret<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 id="publish-through-return-statement">Publish through return statement</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnsafeStates</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> String<span style="color:#f92672">[]</span> states <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[]</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;AK&#34;</span>, <span style="color:#e6db74">&#34;AL&#34;</span> ...
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> String<span style="color:#f92672">[]</span> <span style="color:#a6e22e">getStates</span>() { <span style="color:#66d9ef">return</span> states; }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>An object being published might further publish other objects which are its non-private fields.</p>
+<p>There is a method called <code>alien method</code>, which is the method in a class that you let other users to override, you will not know what this method
+will do to your enclosed objects. This is why a contract for overriding the classes is necessary for ensuring thread-safe.</p>
+<blockquote>
+<p><strong>⚠️ Warning:</strong>
+Once an object escapes, you have to assume that another class or thread may, maliciously or carelessly, misuse it.</p>
+</blockquote>
+<p>Another popular escaping way is you publish an instance of the inner class, which can be used to access to the enclosing private fields.</p>
+<p>For example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ThisEscape</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EventListener</span>{}
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">ThisEscape</span>(EventSource source) {
+</span></span><span style="display:flex;"><span>        source.<span style="color:#a6e22e">registerListener</span>(
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">new</span> EventListener() {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onEvent</span>(Event e) {
+</span></span><span style="display:flex;"><span>                        doSomething(e);
+</span></span><span style="display:flex;"><span>                    } });
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="11-safe-construction-practices">1.1 Safe construction practices</h2>
+<p>The <code>ThisEscape</code> class above also compromise the rule that never publishes the object reference before
+the construction of the object haven&rsquo;t been done. Because the object might be incompletely constructed.</p>
+<p>Separate that section of code to another methods is a good option, for example</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ThisEscape</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EventListener</span>{}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> EventListener listener;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">ThisEscape</span>(EventSource source) {
+</span></span><span style="display:flex;"><span>        listener <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> EventListener() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onEvent</span>(Event e) {
+</span></span><span style="display:flex;"><span>                doSomething(e);
+</span></span><span style="display:flex;"><span>            } 
+</span></span><span style="display:flex;"><span>        };
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">registerEventSource</span>(EventSource source){
+</span></span><span style="display:flex;"><span>        source.<span style="color:#a6e22e">registerListener</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">listener</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="2-immutability">2. Immutability</h1>
+<p>Immutability is also a great measure to ensure thread-safety, once an object is immutable, there is no concern regrading
+multiple writes from threads might cause inconsistent state. Following technique is an example.</p>
+<h2 id="21-final-fields">2.1. Final fields</h2>
+<p>As described in section 1 in Java Programming Language blog, the following server that supports to cache factors of the last requested
+values produce an atomic issue, caused by a thread read <code>lastFactors</code> while another thread attempt to modify it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@NotThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnsafeCachingFactorizer</span> <span style="color:#66d9ef">implements</span> Servlet {
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">&gt;</span> lastNumber
+</span></span><span style="display:flex;"><span>         <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">[]&gt;</span>  lastFactors
+</span></span><span style="display:flex;"><span>         <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicReference<span style="color:#f92672">&lt;</span>BigInteger<span style="color:#f92672">[]&gt;</span>();
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">service</span>(ServletRequest req, ServletResponse resp) {
+</span></span><span style="display:flex;"><span>         BigInteger i <span style="color:#f92672">=</span> extractFromRequest(req);
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">if</span> (i.<span style="color:#a6e22e">equals</span>(lastNumber.<span style="color:#a6e22e">get</span>()))
+</span></span><span style="display:flex;"><span>             encodeIntoResponse(resp,  lastFactors.<span style="color:#a6e22e">get</span>() );
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>             BigInteger<span style="color:#f92672">[]</span> factors <span style="color:#f92672">=</span> factor(i);
+</span></span><span style="display:flex;"><span>             lastNumber.<span style="color:#a6e22e">set</span>(i);
+</span></span><span style="display:flex;"><span>             lastFactors.<span style="color:#a6e22e">set</span>(factors);
+</span></span><span style="display:flex;"><span>             encodeIntoResponse(resp, factors);
+</span></span><span style="display:flex;"><span>         } 
+</span></span><span style="display:flex;"><span>     }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This can be addressed by the use of <code>immutable</code> objects. The idea is:</p>
+<ol>
+<li>You group <code>lastNumber</code> and <code>lastFactors</code> into a class, which exposes no method that modify them, called <code>OneValueCache</code></li>
+<li>In the <code>Factorizer</code> class, keep a field referencing to the latest <code>OneValueCache</code>. Whenever the new factors are updated
+(because of a cache miss), new instance of <code>OneValueCache</code> created, replacing that field.</li>
+</ol>
+<p>As illustrated following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Immutable</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">OneValueCache</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> BigInteger lastNumber;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> BigInteger<span style="color:#f92672">[]</span> lastFactors;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">OneValueCache</span>(BigInteger i,
+</span></span><span style="display:flex;"><span>                         BigInteger<span style="color:#f92672">[]</span> factors) {
+</span></span><span style="display:flex;"><span>        lastNumber  <span style="color:#f92672">=</span> i;
+</span></span><span style="display:flex;"><span>        lastFactors <span style="color:#f92672">=</span> Arrays.<span style="color:#a6e22e">copyOf</span>(factors, factors.<span style="color:#a6e22e">length</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> BigInteger<span style="color:#f92672">[]</span> <span style="color:#a6e22e">getFactors</span>(BigInteger i) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (lastNumber <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>lastNumber.<span style="color:#a6e22e">equals</span>(i))
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> Arrays.<span style="color:#a6e22e">copyOf</span>(lastFactors, lastFactors.<span style="color:#a6e22e">length</span>);
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">VolatileCachedFactorizer</span> <span style="color:#66d9ef">implements</span> Servlet {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">volatile</span> OneValueCache cache <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">new</span> OneValueCache(<span style="color:#66d9ef">null</span>, <span style="color:#66d9ef">null</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">service</span>(ServletRequest req, ServletResponse resp) {
+</span></span><span style="display:flex;"><span>        BigInteger i <span style="color:#f92672">=</span> extractFromRequest(req);
+</span></span><span style="display:flex;"><span>        BigInteger<span style="color:#f92672">[]</span> factors <span style="color:#f92672">=</span> cache.<span style="color:#a6e22e">getFactors</span>(i);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (factors <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span>) {
+</span></span><span style="display:flex;"><span>            factors <span style="color:#f92672">=</span> factor(i);
+</span></span><span style="display:flex;"><span>            cache <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> OneValueCache(i, factors);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        encodeIntoResponse(resp, factors);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This way, the latest factors are ensured to not be altered by another thread, once the instance <code>OneValueCache</code> storing it, is referenced.
+Removing the need of using lock, which can enhance the system performance, as the cost of allocation memory is typically cheaper.</p>
+<h1 id="3-safe-publication">3. Safe publication</h1>
+<h2 id="31-safe-publication-idioms">3.1 Safe Publication Idioms</h2>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
