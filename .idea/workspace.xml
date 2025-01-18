@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: add a bit lesson in chapter 4">
+    <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: include img">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_programming_language__Ken_Arnold/14_10_visibility.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_programming_language__Ken_Arnold/14_10_visibility.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/6.-visibility/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/6.-visibility/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/4_composing_objects.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/4_composing_objects.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +88,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736939753705</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="chore: include img">
+      <option name="closed" value="true" />
+      <created>1736939915339</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1736939915339</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -138,6 +145,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="chore: add a bit lession in chapter 4" />
     <MESSAGE value="chore: add a bit lesson in chapter 4" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore: add a bit lesson in chapter 4" />
+    <MESSAGE value="chore: include img" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: include img" />
   </component>
 </project>
