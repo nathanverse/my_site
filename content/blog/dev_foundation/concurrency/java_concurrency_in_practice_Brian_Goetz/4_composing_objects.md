@@ -122,3 +122,161 @@ public class CountingFactorizer implements Servlet {
     }
 }
 ```
+
+The `CountingFactorizer` class above delegates the thread safety responsibilities to `count`. By delegating,
+we mean that the encapsulating class don't need to add any synchronized code to make it thread-safe, 
+instead it resorts all to its states.
+
+## 3.2. Independent state variables
+For a class encompassing multiple states, we can delegate thread-safety to them only in case 
+the encapsulating class doesn't impose any invariants on states.
+
+For example:
+
+```java
+public class VisualComponent {
+    private final List<KeyListener> keyListeners
+        = new CopyOnWriteArrayList<KeyListener>();
+    private final List<MouseListener> mouseListeners
+        = new CopyOnWriteArrayList<MouseListener>();
+    
+    public void addKeyListener(KeyListener listener) {
+        keyListeners.add(listener);
+    }
+    
+    public void addMouseListener(MouseListener listener) {
+        mouseListeners.add(listener);
+    }
+    
+    public void removeKeyListener(KeyListener listener) {
+        keyListeners.remove(listener);
+    }
+    
+    public void removeMouseListener(MouseListener listener) {
+        mouseListeners.remove(listener);
+    }
+}
+```
+
+`keyListeners` and `mouseListeners` above are two logically separate lists of listeners and thus
+`VisualComponent` can delegate thread-safety to them.
+
+## 3.3. When delegation fails
+In contrast, in case the encapsulating class imposes the constraint on states, 
+the code will be not thread-safe unless you use synchronization. For example
+
+```java
+public class NumberRange {
+    // INVARIANT: lower <= upper
+    private final AtomicInteger lower = new AtomicInteger(0);
+    private final AtomicInteger upper = new AtomicInteger(0);
+    public void setLower(int i) {
+        // Warning -- unsafe check-then-act
+        if (i > upper.get())
+            throw new IllegalArgumentException(
+                    "can't set lower to " + i + " > upper");
+        lower.set(i);
+    }
+    public void setUpper(int i) {
+        // Warning -- unsafe check-then-act
+        if (i < lower.get())
+            throw new IllegalArgumentException(
+                    "can't set upper to " + i + " < lower");
+        upper.set(i);
+    }
+    
+    public boolean isInRange(int i) {
+        return (i >= lower.get() && i <= upper.get());
+    } 
+}
+```
+
+The `NumberRange` above impose a constraint that `lower` should be lower than `upper`. The compound actions
+such as `setLower` or `setUpper` potentially create a bug, because, for example in `setLower()` method
+after checking `upper.get()`,  other threads can come and modify immediately `upper`, making
+`lower` can have a value that is greater than `upper`.
+
+## 3.4. Publishing underlying state variables.
+A class con impose a constraint that limits the state space of its variables, like `Counter` class
+requires the `count` variable to not be negative. In this case, if we publish `count` as a mutable object
+, client code can make a whole instance of a class invalid.
+
+If there is no constraint imposing, for example, imagining `temperature`, client code can change this
+variable without affecting, and thus can be safely published.
+
+
+# 4. Adding functionality to existing thread-safe classes.
+Using the existing class or methods of that class can save effort on maintenance and testing.
+
+In case a thread-safe class doesn't provide the method that we are expecting. A solution can be
+to extend the class and use the existing methods as building blocks. For example, adding `putIfAbsent`
+in the `Vector` class can be
+
+```java
+@ThreadSafe
+public class BetterVector<E> extends Vector<E> {
+    public synchronized boolean putIfAbsent(E x) {
+        boolean absent = !contains(x);
+        if (absent)
+            add(x);
+        return absent;
+    } 
+}
+```
+
+This code can be fragile, because there is the case the underlying class can change the lock on
+accessing its state, making it silently not thread-safe. You should better read documents to check
+lock guarantee of the author. Another disadvantage is extension will spread the implementation
+to various files, making it harder to maintain.
+
+# 4.1. Client-side locking
+There is case you will not know what class to extend for integrating new functionality, especially
+when factory pattern is used, for example, you will not know what subclasses of `List` will be returned
+to extend.
+
+In this case, we can add a class as a helper, as following:
+```java
+@ThreadSafe
+public class ListHelper<E> {
+    public List<E> list =
+            Collections.synchronizedList(new ArrayList<E>());
+    
+    public boolean putIfAbsent(E x) {
+        synchronized (list)  {
+            boolean absent = !list.contains(x);
+            if (absent)
+                list.add(x);
+            return absent;
+        } 
+    }
+}
+```
+
+You must pay close attention to what lock the is using, in this case, the lock have to be used is 
+`list` object which is detailed in the document of `Collections.synchronizedLis`
+
+You might be able to see several drawbacks:
+1. The same with the extension approach, lock of the used class can be changed.
+2. *Client-side* locking is fragile, maintainer might use wrong lock on another object.
+
+# 4.2. Composition
+There is a less fragile alternative for adding an atomic operation to an existing class: composition, demonstrated
+in the `ImprovedList` below. You extend the existing class
+```java
+@ThreadSafe
+public class ImprovedList<T> implements List<T> {
+    private final List<T> list;
+    public ImprovedList(List<T> list) { this.list = list; }
+    public synchronized boolean putIfAbsent(T x) {
+        boolean contains = list.contains(x);
+        if (contains)
+            list.add(x);
+        return !contains;
+    }
+    
+    public synchronized void clear() { list.clear(); }
+}
+```
+
+
+[//]: # (Review the  Client-side locking regarding why it is neccessary to create a helper)
