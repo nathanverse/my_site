@@ -278,5 +278,32 @@ public class ImprovedList<T> implements List<T> {
 }
 ```
 
+# 5. Documenting synchronization policies
 
-[//]: # (Review the  Client-side locking regarding why it is neccessary to create a helper)
+>Document a class's thread safety guarantees for its clients; 
+> document its synchronization policy for its maintainers.
+
+Most classes don't offer any clue regarding concurrent policy, including
+Java technology specifications, such as servlets and JDBC. In this case,
+assuming class are thread-safe or acquire an arbitrary lock is risky.
+
+When developing a class, you are responsible to document concurrent policy, in
+a way that minimizes as many as assumptions for your colleagues and customers.
+
+In some cases, we can imply the class is thread-safe by imaging how the
+class should be implemented. Several classes, such as `ServletContext`, 
+`HttpSession`, and `DataSource` are supposed to accessed by multiple threads,
+therefore, authors of this code must have incorporated synchronization, or
+otherwise, the code would have been reported with numerous issues.
+
+However, be cautious of classes which are designed to store objects, such
+as `ServletContext.setAttribute`. Such method might publish an object
+for the entire application. Objects are published always have to be 
+ensured thread-safety.
+
+If you have no clue whether a class is thread-safe, it is always best to
+assume it is not thread-safe.
+
+
+
+

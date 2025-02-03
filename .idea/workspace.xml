@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: include img">
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/5_building_blocks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/vector_problem.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/4_composing_objects.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/4_composing_objects.md" afterDir="false" />
     </list>
