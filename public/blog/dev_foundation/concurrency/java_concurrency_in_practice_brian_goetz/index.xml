@@ -7,8 +7,15 @@
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2020, Jane Doe.</copyright>
-    <lastBuildDate>Wed, 15 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 02 Feb 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>3. Building blocks</title>
+      <link>http://localhost:1313/3.-building-blocks/</link>
+      <pubDate>Sun, 02 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/3.-building-blocks/</guid>
+      <description>&lt;p&gt;The Java platform libraries include a rich set of concurrent building blocks&#xA;, like:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Thread-safe collections&lt;/li&gt;&#xA;&lt;li&gt;Variety of synchronizers, being able to coordinate the control flow&#xA;of cooperating threads.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;This chapter will get you covered about those concurrent building blocks.&lt;/p&gt;&#xA;&lt;h1 id=&#34;1-synchronized-collections&#34;&gt;1. Synchronized collections.&lt;/h1&gt;&#xA;&lt;p&gt;Java libraries support synchronized collection classes such as&#xA;&lt;code&gt;Vector&lt;/code&gt; and &lt;code&gt;Hashtable&lt;/code&gt;, part of the original JDK,&#xA;as well as their cousins added in JDK 1.2,&#xA;the synchronized wrapper classes created by the &lt;code&gt;Collections.synchronizedXxx&lt;/code&gt;&#xA;factory methods.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>1. Sharing Objects</title>
       <link>http://localhost:1313/1.-sharing-objects/</link>

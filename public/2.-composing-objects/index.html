@@ -53,7 +53,7 @@ This chapter covers patterns for structuring classes that can make it easier to 
 1. Designing a thread-safe class 1.1. Gathering Synchronization Requirements Invariants are defined as constraints that make a certain state of the object invalid or valid. For example, NumberRange instance has two states upper and lower ranges, the lower-range value must always is lower than the upper one.">
   <meta itemprop="datePublished" content="2025-01-15T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-01-15T00:00:00+00:00">
-  <meta itemprop="wordCount" content="416">
+  <meta itemprop="wordCount" content="1731">
   <meta itemprop="image" content="http://localhost:1313/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -293,6 +293,215 @@ on that element, there is chance other threads will add an element to the queue,
 <li>Use low-level mechanisms such as <code>wait</code> and <code>notify</code> (covered in chapter 14).</li>
 <li>Use existing library classes, such as blocking queues or semaphores (covered in chapter 5) &lt;- this is a more straight forward approach.</li>
 </ul>
+<h1 id="2-instance-confinement">2. Instance confinement</h1>
+<p>This is one of the technique to ensure thread-safety for a class: implementing a thread-safe object by
+confining all of its states, which are not necessarily thread-safe. All code paths are analyzed to ensure
+encapsulated states are assessed with the appropriate lock held. For example</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PersonSet</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Set<span style="color:#f92672">&lt;</span>Person<span style="color:#f92672">&gt;</span> mySet <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HashSet<span style="color:#f92672">&lt;</span>Person<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">addPerson</span>(Person p) {
+</span></span><span style="display:flex;"><span>        mySet.<span style="color:#a6e22e">add</span>(p);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">containsPerson</span>(Person p) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> mySet.<span style="color:#a6e22e">contains</span>(p);
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>From the code above, <code>mySet</code> is not thread-safe, but all methods accessing to this variable are guarded
+by the intrinsic lock, making <code>PersonSet</code> a thread safe class.</p>
+<p>However, items <code>Person</code> stored in <code>mySet</code> could be mutable, and thus making it non-thread safe. You can either
+decide to make <code>Person</code> thread-safe, or guard it by a lock, a more unreliable way, and ensure
+noting other developers that any access to <code>Person</code> need to guard by that lock too.</p>
+<blockquote>
+<p>The Java platform class libraries offer some static methods which allow
+to turn a non thread-safe object to become a thread-safe one, such as
+<code>Conllections.synchronizedList</code>. This is done by using Decorator pattern
+to make thread-safe wrapper class for the original one.</p>
+</blockquote>
+<blockquote>
+<p><strong>⚠️ Warning:</strong>
+Be cautious on non thread-safe states of the class, because you might accidentally publish it unsafely.</p>
+</blockquote>
+<h2 id="21-java-monitor-pattern">2.1. Java monitor pattern</h2>
+<p>This is the most basic pattern of <em>Instance confinement</em> we could imply. An object following the Java
+monitor pattern encapsulates all its mutable state and guards it with a lock.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PrivateLock</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Object myLock <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Object();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;myLock&#34;</span>) Widget widget;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">someMethod</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span>(myLock) {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// Access or modify the state of widget</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The lock can be a private member or not. But private lock such as above code has its own advantages</p>
+<ul>
+<li>Clients of class can&rsquo;t participate in its synchronization policy ‐ correctly or incorrectly:
+Accidentally using lock on other same type objects are an example of a bug.</li>
+<li>Verifying client-side locks are difficult, requiring examine a whole program not a class.</li>
+</ul>
+<h1 id="3-delegating-thread-safety">3. Delegating thread safety</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CountingFactorizer</span> <span style="color:#66d9ef">implements</span> Servlet {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicLong count <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicLong(0);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">getCount</span>() { <span style="color:#66d9ef">return</span> count.<span style="color:#a6e22e">get</span>(); }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">service</span>(ServletRequest req, ServletResponse resp) {
+</span></span><span style="display:flex;"><span>        BigInteger i <span style="color:#f92672">=</span> extractFromRequest(req);
+</span></span><span style="display:flex;"><span>        BigInteger<span style="color:#f92672">[]</span> factors <span style="color:#f92672">=</span> factor(i);
+</span></span><span style="display:flex;"><span>        count.<span style="color:#a6e22e">incrementAndGet</span>();
+</span></span><span style="display:flex;"><span>        encodeIntoResponse(resp, factors);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The <code>CountingFactorizer</code> class above delegates the thread safety responsibilities to <code>count</code>. By delegating,
+we mean that the encapsulating class don&rsquo;t need to add any synchronized code to make it thread-safe,
+instead it resorts all to its states.</p>
+<h2 id="32-independent-state-variables">3.2. Independent state variables</h2>
+<p>For a class encompassing multiple states, we can delegate thread-safety to them only in case
+the encapsulating class doesn&rsquo;t impose any invariants on states.</p>
+<p>For example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">VisualComponent</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>KeyListener<span style="color:#f92672">&gt;</span> keyListeners
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> CopyOnWriteArrayList<span style="color:#f92672">&lt;</span>KeyListener<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>MouseListener<span style="color:#f92672">&gt;</span> mouseListeners
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> CopyOnWriteArrayList<span style="color:#f92672">&lt;</span>MouseListener<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">addKeyListener</span>(KeyListener listener) {
+</span></span><span style="display:flex;"><span>        keyListeners.<span style="color:#a6e22e">add</span>(listener);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">addMouseListener</span>(MouseListener listener) {
+</span></span><span style="display:flex;"><span>        mouseListeners.<span style="color:#a6e22e">add</span>(listener);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">removeKeyListener</span>(KeyListener listener) {
+</span></span><span style="display:flex;"><span>        keyListeners.<span style="color:#a6e22e">remove</span>(listener);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">removeMouseListener</span>(MouseListener listener) {
+</span></span><span style="display:flex;"><span>        mouseListeners.<span style="color:#a6e22e">remove</span>(listener);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>keyListeners</code> and <code>mouseListeners</code> above are two logically separate lists of listeners and thus
+<code>VisualComponent</code> can delegate thread-safety to them.</p>
+<h2 id="33-when-delegation-fails">3.3. When delegation fails</h2>
+<p>In contrast, in case the encapsulating class imposes the constraint on states,
+the code will be not thread-safe unless you use synchronization. For example</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">NumberRange</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// INVARIANT: lower &lt;= upper</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicInteger lower <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicInteger(0);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> AtomicInteger upper <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicInteger(0);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setLower</span>(<span style="color:#66d9ef">int</span> i) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Warning -- unsafe check-then-act</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> upper.<span style="color:#a6e22e">get</span>())
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalArgumentException(
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;can&#39;t set lower to &#34;</span> <span style="color:#f92672">+</span> i <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34; &gt; upper&#34;</span>);
+</span></span><span style="display:flex;"><span>        lower.<span style="color:#a6e22e">set</span>(i);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setUpper</span>(<span style="color:#66d9ef">int</span> i) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Warning -- unsafe check-then-act</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&lt;</span> lower.<span style="color:#a6e22e">get</span>())
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalArgumentException(
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;can&#39;t set upper to &#34;</span> <span style="color:#f92672">+</span> i <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34; &lt; lower&#34;</span>);
+</span></span><span style="display:flex;"><span>        upper.<span style="color:#a6e22e">set</span>(i);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">isInRange</span>(<span style="color:#66d9ef">int</span> i) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> (i <span style="color:#f92672">&gt;=</span> lower.<span style="color:#a6e22e">get</span>() <span style="color:#f92672">&amp;&amp;</span> i <span style="color:#f92672">&lt;=</span> upper.<span style="color:#a6e22e">get</span>());
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The <code>NumberRange</code> above impose a constraint that <code>lower</code> should be lower than <code>upper</code>. The compound actions
+such as <code>setLower</code> or <code>setUpper</code> potentially create a bug, because, for example in <code>setLower()</code> method
+after checking <code>upper.get()</code>,  other threads can come and modify immediately <code>upper</code>, making
+<code>lower</code> can have a value that is greater than <code>upper</code>.</p>
+<h2 id="34-publishing-underlying-state-variables">3.4. Publishing underlying state variables.</h2>
+<p>A class con impose a constraint that limits the state space of its variables, like <code>Counter</code> class
+requires the <code>count</code> variable to not be negative. In this case, if we publish <code>count</code> as a mutable object
+, client code can make a whole instance of a class invalid.</p>
+<p>If there is no constraint imposing, for example, imagining <code>temperature</code>, client code can change this
+variable without affecting, and thus can be safely published.</p>
+<h1 id="4-adding-functionality-to-existing-thread-safe-classes">4. Adding functionality to existing thread-safe classes.</h1>
+<p>Using the existing class or methods of that class can save effort on maintenance and testing.</p>
+<p>In case a thread-safe class doesn&rsquo;t provide the method that we are expecting. A solution can be
+to extend the class and use the existing methods as building blocks. For example, adding <code>putIfAbsent</code>
+in the <code>Vector</code> class can be</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BetterVector</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> Vector<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">putIfAbsent</span>(E x) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">boolean</span> absent <span style="color:#f92672">=</span> <span style="color:#f92672">!</span>contains(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (absent)
+</span></span><span style="display:flex;"><span>            add(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> absent;
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This code can be fragile, because there is the case the underlying class can change the lock on
+accessing its state, making it silently not thread-safe. You should better read documents to check
+lock guarantee of the author. Another disadvantage is extension will spread the implementation
+to various files, making it harder to maintain.</p>
+<h1 id="41-client-side-locking">4.1. Client-side locking</h1>
+<p>There is case you will not know what class to extend for integrating new functionality, especially
+when factory pattern is used, for example, you will not know what subclasses of <code>List</code> will be returned
+to extend.</p>
+<p>In this case, we can add a class as a helper, as following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListHelper</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> List<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>            Collections.<span style="color:#a6e22e">synchronizedList</span>(<span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>());
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">putIfAbsent</span>(E x) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (list)  {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">boolean</span> absent <span style="color:#f92672">=</span> <span style="color:#f92672">!</span>list.<span style="color:#a6e22e">contains</span>(x);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (absent)
+</span></span><span style="display:flex;"><span>                list.<span style="color:#a6e22e">add</span>(x);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> absent;
+</span></span><span style="display:flex;"><span>        } 
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>You must pay close attention to what lock the is using, in this case, the lock have to be used is
+<code>list</code> object which is detailed in the document of <code>Collections.synchronizedLis</code></p>
+<p>You might be able to see several drawbacks:</p>
+<ol>
+<li>The same with the extension approach, lock of the used class can be changed.</li>
+<li><em>Client-side</em> locking is fragile, maintainer might use wrong lock on another object.</li>
+</ol>
+<h1 id="42-composition">4.2. Composition</h1>
+<p>There is a less fragile alternative for adding an atomic operation to an existing class: composition, demonstrated
+in the <code>ImprovedList</code> below. You extend the existing class</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ImprovedList</span><span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">implements</span> List<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> list;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">ImprovedList</span>(List<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> list) { <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">list</span> <span style="color:#f92672">=</span> list; }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">putIfAbsent</span>(T x) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">boolean</span> contains <span style="color:#f92672">=</span> list.<span style="color:#a6e22e">contains</span>(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (contains)
+</span></span><span style="display:flex;"><span>            list.<span style="color:#a6e22e">add</span>(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">!</span>contains;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">clear</span>() { list.<span style="color:#a6e22e">clear</span>(); }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="5-documenting-synchronization-policies">5. Documenting synchronization policies</h1>
+<blockquote>
+<p>Document a class&rsquo;s thread safety guarantees for its clients;
+document its synchronization policy for its maintainers.</p>
+</blockquote>
+<p>Most classes don&rsquo;t offer any clue regarding concurrent policy, including
+Java technology specifications, such as servlets and JDBC. In this case,
+assuming class are thread-safe or acquire an arbitrary lock is risky.</p>
+<p>When developing a class, you are responsible to document concurrent policy, in
+a way that minimizes as many as assumptions for your colleagues and customers.</p>
+<p>In some cases, we can imply the class is thread-safe by imaging how the
+class should be implemented. Several classes, such as <code>ServletContext</code>,
+<code>HttpSession</code>, and <code>DataSource</code> are supposed to accessed by multiple threads,
+therefore, authors of this code must have incorporated synchronization, or
+otherwise, the code would have been reported with numerous issues.</p>
+<p>However, be cautious of classes which are designed to store objects, such
+as <code>ServletContext.setAttribute</code>. Such method might publish an object
+for the entire application. Objects are published always have to be
+ensured thread-safety.</p>
+<p>If you have no clue whether a class is thread-safe, it is always best to
+assume it is not thread-safe.</p>
 
 </content>
 <p>

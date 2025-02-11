@@ -1,0 +1,7 @@
+<!-- layouts/shortcodes/titled-code.html -->
+<div style="margin: 20px 0;" id="{{ .Get "id" }}">
+    {{ highlight (trim .Inner "\n") (.Get "language") "linenos=table"}}
+    <div style="text-align: center; font-style: italic; margin-top: 10px;">
+        {{ .Get "title" }}
+    </div>
+</div>
