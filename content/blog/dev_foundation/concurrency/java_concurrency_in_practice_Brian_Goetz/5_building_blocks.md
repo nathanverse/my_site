@@ -258,9 +258,94 @@ to be created. As such, it is better to allow worker threads, which request conn
 use the connection to a particular database one by one. With thread confinement technique, you need to ensure the connection, which is mutable,
 is not modified by another thread.
 
-This can be done by using blocking queues with a little more work, it could also done with the atomic remove method of 
+This can be done by using blocking queues with a little more work, it could also be done with the atomic remove method of 
 ConcurrentMap or the compareAndSet method of AtomicReference.
 
 You should do a little exercise to practice this concept.
 
 # 3.3. Deques and work stealing
+*Deques and work stealing* is a different concurrency scheme other than *work sharing*, in which:
+1. Each thread has it own queue. Tasks, in this case, are distributed to the these queue for threads to compute.
+2. When a queue of it thread runs out of tasks, it steals tasks from tails of queues of other threads. The reason to steal from tails
+is to avoid synchronization between threads.
+3. A task, after being executed, may generate a number of the same tasks, which will be put in the queue of the executing thread.
+
+*Work stealing* offers several benefits compared to *work sharing*
+1. Reduce contention between threads, because it minimizes the time access to the shared queue.
+2. Accessing to local memory of thread is faster.
+
+# 4. Blocking and interruptible methods
+Your code can be suspended by multiple reasons, sleeping, waiting another thread, waiting the I/O completion, etc.
+
+These operations often throw `InterruptedException` if the thread is asked to be interrupted (by the main thread, or other threads).
+You can also design a method to throw `InterruptedException` if you want long-running tasks executed by the thread to be interrupted.
+
+Interruption is a cooperative mechanism, meaning that thread is only interrupted when it is asked, and it agrees to interrupt what it is
+doing at a stopping point.
+
+When your thread is interrupted, what you should do is to do some cleanup for the thread's task and propagate `InterruptedException` to
+the upper methods in call stack. This can be done by:
+1. Catch, clean, then rethrow, or.
+2. If your code are being in a `Runable`, you can do clean and signal the upper methods in the stack
+by calling interrupt on the current thread, which is called `restore the interrupted status`.
+
+Be cautious if you are trying to ignore the `InterruptedException`, because you might deprive the code from upper stack of the opportunity
+to act on the interruption.
+
+# 5. Synchronizers
+A synchronizer is any object that coordinates the control flow of threads based on its state.
+
+All synchronizers share certain structural properties: they encapsulate state that determines whether threads arriving 
+at the synchronizer should be allowed to pass or forced to wait, provide methods to manipulate that state, 
+and provide methods to wait efficiently for the synchronizer to enter the desired state.
+
+## 5.1. `Latches`
+Latch is designed like a gateway. When threads come to latch, they have to wait until the gateway is open, meaning a specific conditions are
+met.
+
+Like `CountDownLatch`, its gateway is defined as a count variable. Each thread `countDown()` on `CountDownLatch` will wait and only continue
+when the count reach 0. Look at the following code.
+
+```java {linenos=table}
+public class TestHarness {
+    public long timeTasks(int nThreads, final Runnable task) throws InterruptedException {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final CountDownLatch endGate = new CountDownLatch(nThreads);
+        for (int i = 0; i < nThreads; i++) {
+            Thread t = new Thread() {
+                public void run() {
+                    try {
+                        startGate.await();
+                        try {
+                            task.run();
+                        } finally {
+                            endGate.countDown();
+                        }
+                    } catch (InterruptedException ignored) { }
+                }
+            };
+            t.start(); }
+        long start = System.nanoTime();
+        startGate.countDown();
+        endGate.await();
+        long end = System.nanoTime();
+        return end-start;
+    }
+}
+```
+
+`TestHarness` aims to calculate the executing time when the code executing with `nThreads`. The `startGate` and `endGate` comes in handy
+because it enables us to know when all threads are ready to start the execution, and when the last thread is done with its tasks. Measuring
+time execution without latches might be hard. 
+
+You may attempt to record `end` in the last thread of for loop, but it might not the ending thread because the difference in the characteristics
+of the task, or the degree of lock contention.
+
+You might want to synchronize `end` across threads, hmm, but the performance might suffer.
+
+The benefits of latch have numerous applications.
+1. Ensuring that a computation does not proceed until resources it needs have been initialized.
+2. Ensuring that a service does not start until other services on which it depends have started
+3. Waiting until all the parties involved in an activity, for instance the players in a multi‐player game, are ready to proceed. 
+
+## 5.2. `FutureTask`
