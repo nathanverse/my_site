@@ -324,7 +324,8 @@ public class TestHarness {
                     } catch (InterruptedException ignored) { }
                 }
             };
-            t.start(); }
+            t.start(); 
+        }
         long start = System.nanoTime();
         startGate.countDown();
         endGate.await();
@@ -349,3 +350,51 @@ The benefits of latch have numerous applications.
 3. Waiting until all the parties involved in an activity, for instance the players in a multi‐player game, are ready to proceed. 
 
 ## 5.2. `FutureTask`
+`FutureTask` like `Latch` but it will allow thread to continue only the task associated with it returns a result or throws an error.
+
+The result returned by `FutureTask` is guaranteed to be a safe publication.
+
+
+```java
+
+public class Preloader {
+    private final FutureTask<ProductInfo> future =
+        new FutureTask<ProductInfo>(new Callable<ProductInfo>() {
+            public ProductInfo call() throws DataLoadException {
+                return loadProductInfo();
+            } 
+        });
+    
+    private final Thread thread = new Thread(future);
+    public void start() { thread.start(); }
+    
+    public ProductInfo get()
+            throws DataLoadException, InterruptedException {
+        try {
+            return future.get();
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof DataLoadException)
+                throw (DataLoadException) cause;
+            else
+                throw launderThrowable(cause);
+        } 
+    }
+}
+```
+
+`PreLoader` above is an example, which uses the `FutureTask` to return `ProductInfo` asynchronously. Basically, you have to define
+what the task does in `Callable`, define thread which is responsible to run it.
+
+`future.get()` call can throw `ExecutionException` (which derive `Throwable`) which encapsulates checked, 
+unchecked exceptions and even `Error`. This means even if you throw any checked exception in `Callable` definition, 
+the result will always return `ExecutionException`. Because we have to always throw unchecked exception (`RuntimeException`), and `Error`
+, handling exception for `future.get()` might be cumbersome.
+
+`launderThrowable` is the utility method, which can help to make the code cleaner. This method throws immediately when the `Throwable`
+is an `Error`, throws `IllegalStateException` if it is a checked exception (reasonable before you have to handle this exception beforehand)
+, and return  `RuntimeException` if it is unchecked one.
+
+## 5.3. `Semaphores`
+Counting semaphores are used to control the number of activities that can access a certain resource or perform a given action
+at the same time. Counting semaphores can be used to implement resource pools or to impose a bound on a collection.
