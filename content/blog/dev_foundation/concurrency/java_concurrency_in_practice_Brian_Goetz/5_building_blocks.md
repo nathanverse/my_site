@@ -128,7 +128,7 @@ concurrency comes from synchronized collection, including:
 Concurrent collections are designed to be accessed by multiple threads and
 can offer dramatic scalability improvements with little risk.
 
-# 2.1. ConcurrentHashMap
+## 2.1. ConcurrentHashMap
 Rather than locking all operations to the `Map` states,
 `ConcurrentHashMap` uses certain techniques to enhance the scalability:
 + `Lock Striping`: Dividing the map into multiple segments (stripes) with
@@ -181,7 +181,7 @@ This queue, though is beneficial in cases where you have multiple consumers read
 + Allow producers to know the state of the task when it is actually handled, unlike normal queue, where producers drop the task
 in a mailbox, knowing nothing about it.
 
-# 3.1. Example: Desktop search
+## 3.1. Example: Desktop search
 One type of program that is amenable to decomposition into producers and consumers is an agent that scans local drives (`DiskCrawler`)
 for documents and indexes them for later searching  (`Indexer`).
 
@@ -249,7 +249,7 @@ public static void startIndexing(File[] roots) {
 }
 ```
 
-# 3.2. Serial Thread Confinement
+## 3.2. Serial Thread Confinement
 To ensure thread-safety for a mutable variable, as mentioned, we can use thread confinement technique, where that object is handed off
 to another thread and released from the origin thread. This is particular useful for cases where deep copy is costly.
 
@@ -263,7 +263,7 @@ ConcurrentMap or the compareAndSet method of AtomicReference.
 
 You should do a little exercise to practice this concept.
 
-# 3.3. Deques and work stealing
+## 3.3. Deques and work stealing
 *Deques and work stealing* is a different concurrency scheme other than *work sharing*, in which:
 1. Each thread has it own queue. Tasks, in this case, are distributed to the these queue for threads to compute.
 2. When a queue of it thread runs out of tasks, it steals tasks from tails of queues of other threads. The reason to steal from tails
