@@ -59,7 +59,7 @@ Thread-safe collections Variety of synchronizers, being able to coordinate the c
 1. Synchronized collections. Java libraries support synchronized collection classes such as Vector and Hashtable, part of the original JDK, as well as their cousins added in JDK 1.2, the synchronized wrapper classes created by the Collections.synchronizedXxx factory methods.">
   <meta itemprop="datePublished" content="2025-02-02T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-02-02T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1547">
+  <meta itemprop="wordCount" content="3353">
   <meta itemprop="image" content="http://localhost:1313/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -602,10 +602,338 @@ to another thread and released from the origin thread. This is particular useful
 to be created. As such, it is better to allow worker threads, which request connections from the pool to execute database queries,
 use the connection to a particular database one by one. With thread confinement technique, you need to ensure the connection, which is mutable,
 is not modified by another thread.</p>
-<p>This can be done by using blocking queues with a little more work, it could also done with the atomic remove method of
+<p>This can be done by using blocking queues with a little more work, it could also be done with the atomic remove method of
 ConcurrentMap or the compareAndSet method of AtomicReference.</p>
 <p>You should do a little exercise to practice this concept.</p>
 <h1 id="33-deques-and-work-stealing">3.3. Deques and work stealing</h1>
+<p><em>Deques and work stealing</em> is a different concurrency scheme other than <em>work sharing</em>, in which:</p>
+<ol>
+<li>Each thread has it own queue. Tasks, in this case, are distributed to the these queue for threads to compute.</li>
+<li>When a queue of it thread runs out of tasks, it steals tasks from tails of queues of other threads. The reason to steal from tails
+is to avoid synchronization between threads.</li>
+<li>A task, after being executed, may generate a number of the same tasks, which will be put in the queue of the executing thread.</li>
+</ol>
+<p><em>Work stealing</em> offers several benefits compared to <em>work sharing</em></p>
+<ol>
+<li>Reduce contention between threads, because it minimizes the time access to the shared queue.</li>
+<li>Accessing to local memory of thread is faster.</li>
+</ol>
+<h1 id="4-blocking-and-interruptible-methods">4. Blocking and interruptible methods</h1>
+<p>Your code can be suspended by multiple reasons, sleeping, waiting another thread, waiting the I/O completion, etc.</p>
+<p>These operations often throw <code>InterruptedException</code> if the thread is asked to be interrupted (by the main thread, or other threads).
+You can also design a method to throw <code>InterruptedException</code> if you want long-running tasks executed by the thread to be interrupted.</p>
+<p>Interruption is a cooperative mechanism, meaning that thread is only interrupted when it is asked, and it agrees to interrupt what it is
+doing at a stopping point.</p>
+<p>When your thread is interrupted, what you should do is to do some cleanup for the thread&rsquo;s task and propagate <code>InterruptedException</code> to
+the upper methods in call stack. This can be done by:</p>
+<ol>
+<li>Catch, clean, then rethrow, or.</li>
+<li>If your code are being in a <code>Runable</code>, you can do clean and signal the upper methods in the stack
+by calling interrupt on the current thread, which is called <code>restore the interrupted status</code>.</li>
+</ol>
+<p>Be cautious if you are trying to ignore the <code>InterruptedException</code>, because you might deprive the code from upper stack of the opportunity
+to act on the interruption.</p>
+<h1 id="5-synchronizers">5. Synchronizers</h1>
+<p>A synchronizer is any object that coordinates the control flow of threads based on its state.</p>
+<p>All synchronizers share certain structural properties: they encapsulate state that determines whether threads arriving
+at the synchronizer should be allowed to pass or forced to wait, provide methods to manipulate that state,
+and provide methods to wait efficiently for the synchronizer to enter the desired state.</p>
+<h2 id="51-latches">5.1. <code>Latches</code></h2>
+<p>Latch is designed like a gateway. When threads come to latch, they have to wait until the gateway is open, meaning a specific conditions are
+met.</p>
+<p>Like <code>CountDownLatch</code>, its gateway is defined as a count variable. Each thread <code>countDown()</code> on <code>CountDownLatch</code> will wait and only continue
+when the count reach 0. Look at the following code.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TestHarness</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">timeTasks</span>(<span style="color:#66d9ef">int</span> nThreads, <span style="color:#66d9ef">final</span> Runnable task) <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">final</span> CountDownLatch startGate <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> CountDownLatch(1);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">final</span> CountDownLatch endGate <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> CountDownLatch(nThreads);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0; i <span style="color:#f92672">&lt;</span> nThreads; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            Thread t <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread() {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                        startGate.<span style="color:#a6e22e">await</span>();
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                            task.<span style="color:#a6e22e">run</span>();
+</span></span><span style="display:flex;"><span>                        } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                            endGate.<span style="color:#a6e22e">countDown</span>();
+</span></span><span style="display:flex;"><span>                        }
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">catch</span> (InterruptedException ignored) { }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            };
+</span></span><span style="display:flex;"><span>            t.<span style="color:#a6e22e">start</span>(); 
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">long</span> start <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">nanoTime</span>();
+</span></span><span style="display:flex;"><span>        startGate.<span style="color:#a6e22e">countDown</span>();
+</span></span><span style="display:flex;"><span>        endGate.<span style="color:#a6e22e">await</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">long</span> end <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">nanoTime</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> end<span style="color:#f92672">-</span>start;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>TestHarness</code> aims to calculate the executing time when the code executing with <code>nThreads</code>. The <code>startGate</code> and <code>endGate</code> comes in handy
+because it enables us to know when all threads are ready to start the execution, and when the last thread is done with its tasks. Measuring
+time execution without latches might be hard.</p>
+<p>You may attempt to record <code>end</code> in the last thread of for loop, but it might not the ending thread because the difference in the characteristics
+of the task, or the degree of lock contention.</p>
+<p>You might want to synchronize <code>end</code> across threads, hmm, but the performance might suffer.</p>
+<p>The benefits of latch have numerous applications.</p>
+<ol>
+<li>Ensuring that a computation does not proceed until resources it needs have been initialized.</li>
+<li>Ensuring that a service does not start until other services on which it depends have started</li>
+<li>Waiting until all the parties involved in an activity, for instance the players in a multi‐player game, are ready to proceed.</li>
+</ol>
+<h2 id="52-futuretask">5.2. <code>FutureTask</code></h2>
+<p><code>FutureTask</code> like <code>Latch</code> but it will allow thread to continue only the task associated with it returns a result or throws an error.</p>
+<p>The result returned by <code>FutureTask</code> is guaranteed to be a safe publication.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Preloader</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> FutureTask<span style="color:#f92672">&lt;</span>ProductInfo<span style="color:#f92672">&gt;</span> future <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">new</span> FutureTask<span style="color:#f92672">&lt;</span>ProductInfo<span style="color:#f92672">&gt;</span>(<span style="color:#66d9ef">new</span> Callable<span style="color:#f92672">&lt;</span>ProductInfo<span style="color:#f92672">&gt;</span>() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">public</span> ProductInfo <span style="color:#a6e22e">call</span>() <span style="color:#66d9ef">throws</span> DataLoadException {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> loadProductInfo();
+</span></span><span style="display:flex;"><span>            } 
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Thread thread <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread(future);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">start</span>() { thread.<span style="color:#a6e22e">start</span>(); }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> ProductInfo <span style="color:#a6e22e">get</span>()
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">throws</span> DataLoadException, InterruptedException {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> future.<span style="color:#a6e22e">get</span>();
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (ExecutionException e) {
+</span></span><span style="display:flex;"><span>            Throwable cause <span style="color:#f92672">=</span> e.<span style="color:#a6e22e">getCause</span>();
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (cause <span style="color:#66d9ef">instanceof</span> DataLoadException)
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">throw</span> (DataLoadException) cause;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">throw</span> launderThrowable(cause);
+</span></span><span style="display:flex;"><span>        } 
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>PreLoader</code> above is an example, which uses the <code>FutureTask</code> to return <code>ProductInfo</code> asynchronously. Basically, you have to define
+what the task does in <code>Callable</code>, define thread which is responsible to run it.</p>
+<p><code>future.get()</code> call can throw <code>ExecutionException</code> (which derive <code>Throwable</code>) which encapsulates checked,
+unchecked exceptions and even <code>Error</code>. This means even if you throw any checked exception in <code>Callable</code> definition,
+the result will always return <code>ExecutionException</code>. Because we have to always throw unchecked exception (<code>RuntimeException</code>), and <code>Error</code>
+, handling exception for <code>future.get()</code> might be cumbersome.</p>
+<p><code>launderThrowable</code> is the utility method, which can help to make the code cleaner. This method throws immediately when the <code>Throwable</code>
+is an <code>Error</code>, throws <code>IllegalStateException</code> if it is a checked exception (reasonable before you have to handle this exception beforehand)
+, and return  <code>RuntimeException</code> if it is unchecked one.</p>
+<h2 id="53-semaphores">5.3. <code>Semaphores</code></h2>
+<p>Counting semaphores are used to control the number of activities that can access a certain resource or perform a given action
+at the same time. Counting semaphores can be used to implement resource pools or to impose a bound on a collection.</p>
+<p>Probably the most popular application of semaphore is a database connection pools where there are <em>n</em> connections for thread to
+get and execute the query. If the pool runs out, any thread requests will have to wait until there are connections.</p>
+<p>Below is an example of semaphore used to restrict n login by <a href="https://www.baeldung.com/java-semaphore">Baeldung</a>.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LoginQueueUsingSemaphore</span> {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> Semaphore semaphore;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">LoginQueueUsingSemaphore</span>(<span style="color:#66d9ef">int</span> slotLimit) {
+</span></span><span style="display:flex;"><span>        semaphore <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Semaphore(slotLimit);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">tryLogin</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> semaphore.<span style="color:#a6e22e">tryAcquire</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">logout</span>() {
+</span></span><span style="display:flex;"><span>        semaphore.<span style="color:#a6e22e">release</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">availableSlots</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> semaphore.<span style="color:#a6e22e">availablePermits</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="54-barriers">5.4. Barriers</h2>
+<p><em>Barrier</em> likes <em>latch</em>, it allows all thread to pass when all <em>n</em> thread reach it. However, there are several differences:</p>
+<ol>
+<li><em>Barriers</em> don&rsquo;t have eventual state like <em>latch</em>, it can be reused for the next step.</li>
+<li>For each step, <em>Barrier</em> can be set up with an operation, that will be executed before releasing all threads.</li>
+</ol>
+<p>Put it in different way, <em>Barrier</em> waits for all threads to come while <em>Latch</em> waits for a condition to be met.</p>
+<p>One implementation is <code>CyclicBarrier</code>, which features the same functions as mentioned above. Another noticeable point of this class is that
+, once a thread wait on the barrier is either interrupted or timed out, the barrier is considered broken and all other threads will be
+thrown with <code>BrokenBarrierException</code>, which is sensible as all threads can not come to the barrier if one thread fails.</p>
+<p><em>Barrier</em> is suitable for problems that can be subdivided and executed parallel by multiple threads. One all threads are done with their jobs
+, they get to the next state of the problem which is the same with the problem they have dealt with.</p>
+<p>One another form of <em>Barrier</em> is <code>Exchanger</code>, a two-party barrier which allows parties to exchange data at the barrier point. <code>Exchanger</code>s
+are useful when the parties perform asymmetric activities, for example when one thread fills a buffer with data
+and the other thread consumes the data from the buffer; these threads could use an <code>Exchanger</code>
+to meet and exchange a full buffer for an empty one.</p>
+<h2 id="6-building-an-efficient-scalable-result-cache">6. Building an efficient, scalable result cache.</h2>
+<p>The book walks you through how to build a concurrently efficient but scalable cache very intuitively. The below is the final implementation
+of the cache, in which:</p>
+<ol>
+<li><code>Computable&lt;A,V&gt;</code> represents an operation that has input of type <code>A</code> and output of type <code>V</code>.</li>
+<li><code>Memorizer</code> is a cache which is also a <code>Computable&lt;A,V&gt;</code> but wrap another instance of <code>Computable&lt;A,V&gt;</code>, to cache result using hash map.</li>
+</ol>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Memorizer</span><span style="color:#f92672">&lt;</span>A, V<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">implements</span> Computable<span style="color:#f92672">&lt;</span>A, V<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> ConcurrentMap<span style="color:#f92672">&lt;</span>A, Future<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;&gt;</span> cache
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ConcurrentHashMap<span style="color:#f92672">&lt;</span>A, Future<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;&gt;</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Computable<span style="color:#f92672">&lt;</span>A, V<span style="color:#f92672">&gt;</span> c;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">Memorizer</span>(Computable<span style="color:#f92672">&lt;</span>A, V<span style="color:#f92672">&gt;</span> c) { <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">c</span> <span style="color:#f92672">=</span> c; }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> V <span style="color:#a6e22e">compute</span>(<span style="color:#66d9ef">final</span> A arg) <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>) {
+</span></span><span style="display:flex;"><span>            Future<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> f <span style="color:#f92672">=</span> cache.<span style="color:#a6e22e">get</span>(arg);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (f <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span>) {
+</span></span><span style="display:flex;"><span>                Callable<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> eval <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Callable<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span>() {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">public</span> V <span style="color:#a6e22e">call</span>() <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">return</span> c.<span style="color:#a6e22e">compute</span>(arg);
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                };
+</span></span><span style="display:flex;"><span>                FutureTask<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> ft <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> FutureTask<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span>(eval);
+</span></span><span style="display:flex;"><span>                f <span style="color:#f92672">=</span> cache.<span style="color:#a6e22e">putIfAbsent</span>(arg, ft); <span style="color:#75715e">// Two threads executing ask for the same result might come to here, </span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// but only one is allowed to execute the operation ft.run()</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (f <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span>) { f <span style="color:#f92672">=</span> ft; ft.<span style="color:#a6e22e">run</span>(); }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> f.<span style="color:#a6e22e">get</span>();
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">catch</span> (CancellationException e) {
+</span></span><span style="display:flex;"><span>                cache.<span style="color:#a6e22e">remove</span>(arg, f);
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">catch</span> (ExecutionException e) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">throw</span> launderThrowable(e.<span style="color:#a6e22e">getCause</span>());
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The final implementation addresses several issue</p>
+<ol>
+<li>You might first attempt to use <code>HashMap</code> but not <code>ConcurrentMap</code>, this requires you to use client synchronization on the entire
+<code>HashMap</code>, making the cache slower, because while we can execute the operation <code>c.compute</code> for the missed value for a thread
+, but we force it to wait the computation of another thread on the different value.</li>
+<li>You use <code>ConcurrentMap</code> to address the problem, this is more efficient because we synchronize on each operation of <code>ConcurrentMap</code> not
+the whole instance. However, there are the cases where two threads ask for a result of the same value,
+arrive at the same time, meet a miss cache, and start computing. This is a cpu bottleneck, because instead of both executing the long
+operation, we can enhance by making a thread wait on another thread computation&rsquo;s result.</li>
+<li><code>FutureTask</code> comes in handy in this case. It allows you to wait the result of another thread. However, there is still small chance
+that two threads executing the operation at the same time without waiting the result of the other if you don&rsquo;t make put-if-absent operation
+of the <code>ConcurrentMap</code> atomic. Using <code>cache.putIfAbsent(arg, ft)</code> in the line 16 addressing this.</li>
+</ol>
+<p>That is the end of the chapter&hellip;&hellip;</p>
 
 </content>
 <p>

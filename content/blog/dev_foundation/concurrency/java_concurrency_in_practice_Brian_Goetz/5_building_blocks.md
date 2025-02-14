@@ -355,8 +355,7 @@ The benefits of latch have numerous applications.
 The result returned by `FutureTask` is guaranteed to be a safe publication.
 
 
-```java
-
+```java {linenos=table}
 public class Preloader {
     private final FutureTask<ProductInfo> future =
         new FutureTask<ProductInfo>(new Callable<ProductInfo>() {
@@ -398,3 +397,105 @@ is an `Error`, throws `IllegalStateException` if it is a checked exception (reas
 ## 5.3. `Semaphores`
 Counting semaphores are used to control the number of activities that can access a certain resource or perform a given action
 at the same time. Counting semaphores can be used to implement resource pools or to impose a bound on a collection.
+
+Probably the most popular application of semaphore is a database connection pools where there are *n* connections for thread to 
+get and execute the query. If the pool runs out, any thread requests will have to wait until there are connections. 
+
+Below is an example of semaphore used to restrict n login by [Baeldung](https://www.baeldung.com/java-semaphore).
+
+```java {linenos=table}
+class LoginQueueUsingSemaphore {
+
+    private Semaphore semaphore;
+
+    public LoginQueueUsingSemaphore(int slotLimit) {
+        semaphore = new Semaphore(slotLimit);
+    }
+
+    boolean tryLogin() {
+        return semaphore.tryAcquire();
+    }
+
+    void logout() {
+        semaphore.release();
+    }
+
+    int availableSlots() {
+        return semaphore.availablePermits();
+    }
+
+}
+```
+
+## 5.4. Barriers
+*Barrier* likes *latch*, it allows all thread to pass when all *n* thread reach it. However, there are several differences:
+1. *Barriers* don't have eventual state like *latch*, it can be reused for the next step.
+2. For each step, *Barrier* can be set up with an operation, that will be executed before releasing all threads.
+
+Put it in different way, *Barrier* waits for all threads to come while *Latch* waits for a condition to be met.
+
+One implementation is `CyclicBarrier`, which features the same functions as mentioned above. Another noticeable point of this class is that
+, once a thread wait on the barrier is either interrupted or timed out, the barrier is considered broken and all other threads will be
+thrown with `BrokenBarrierException`, which is sensible as all threads can not come to the barrier if one thread fails.
+
+*Barrier* is suitable for problems that can be subdivided and executed parallel by multiple threads. One all threads are done with their jobs
+, they get to the next state of the problem which is the same with the problem they have dealt with.
+
+One another form of *Barrier* is `Exchanger`, a two-party barrier which allows parties to exchange data at the barrier point. `Exchanger`s
+are useful when the parties perform asymmetric activities, for example when one thread fills a buffer with data
+and the other thread consumes the data from the buffer; these threads could use an `Exchanger`
+to meet and exchange a full buffer for an empty one.
+
+## 6. Building an efficient, scalable result cache.
+The book walks you through how to build a concurrently efficient but scalable cache very intuitively. The below is the final implementation
+of the cache, in which:
+1. `Computable<A,V>` represents an operation that has input of type `A` and output of type `V`.
+2. `Memorizer` is a cache which is also a `Computable<A,V>` but wrap another instance of `Computable<A,V>`, to cache result using hash map.
+
+```java {linenos=table}
+public class Memorizer<A, V> implements Computable<A, V> {
+    private final ConcurrentMap<A, Future<V>> cache
+        = new ConcurrentHashMap<A, Future<V>>();
+    private final Computable<A, V> c;
+    public Memorizer(Computable<A, V> c) { this.c = c; }
+    public V compute(final A arg) throws InterruptedException {
+        while (true) {
+            Future<V> f = cache.get(arg);
+            if (f == null) {
+                Callable<V> eval = new Callable<V>() {
+                    public V call() throws InterruptedException {
+                        return c.compute(arg);
+                    }
+                };
+                FutureTask<V> ft = new FutureTask<V>(eval);
+                f = cache.putIfAbsent(arg, ft); // Two threads executing ask for the same result might come to here, 
+                // but only one is allowed to execute the operation ft.run()
+                if (f == null) { f = ft; ft.run(); }
+            }
+            try {
+                return f.get();
+            } catch (CancellationException e) {
+                cache.remove(arg, f);
+            } catch (ExecutionException e) {
+                throw launderThrowable(e.getCause());
+            }
+        }
+    }
+}
+```
+
+The final implementation addresses several issue
+1. You might first attempt to use `HashMap` but not `ConcurrentMap`, this requires you to use client synchronization on the entire
+`HashMap`, making the cache slower, because while we can execute the operation `c.compute` for the missed value for a thread
+, but we force it to wait the computation of another thread on the different value.
+2. You use `ConcurrentMap` to address the problem, this is more efficient because we synchronize on each operation of `ConcurrentMap` not
+the whole instance. However, there are the cases where two threads ask for a result of the same value, 
+arrive at the same time, meet a miss cache, and start computing. This is a cpu bottleneck, because instead of both executing the long
+operation, we can enhance by making a thread wait on another thread computation's result.
+3. `FutureTask` comes in handy in this case. It allows you to wait the result of another thread. However, there is still small chance
+that two threads executing the operation at the same time without waiting the result of the other if you don't make put-if-absent operation
+of the `ConcurrentMap` atomic. Using `cache.putIfAbsent(arg, ft)` in the line 16 addressing this.
+
+
+That is the end of the chapter...... I get so excited to use principles and tools of this chapter to build real things in the next 
+chapter. Happy learning all ^_^.
