@@ -94,7 +94,7 @@ how should the application be notified?
 For example, you can benchmark to check the number of threads sufficient to run on your limited memory and CPUs and tool the `Executor` 
 accordingly.
 
-Following is a webserver using `Executor:
+Following is a webserver using `Executor`:
 ```java {linenos=table}
 class TaskExecutionWebServer {
     private static final int NTHREADS = 100;
@@ -134,14 +134,14 @@ and other possibilities that would have been far more difficult to add without a
 
 
 ## 2.1. Thread pools:
-Thread pools executor place a limit on number of worker threads can be created. Each worker thread, in turn of execution, take a task
+Thread pools executor place a limit on number of worker threads can be created. Each worker thread, in turn of execution, takes a task
 from a task queue (which can be bounded or unbounded, though unbounded one can cause out of memory) and execute.
 
-*Thread-pool* approach not only address those problems mentioned in [Section 1.3]({{< ref "#unbounded-thread" >}}), as it creates thread
+*Thread-pool* approach not only addresses those problems mentioned in [Section 1.3]({{< ref "#unbounded-thread" >}}), as it creates thread
 only there are number of requests exceeding the current size of the pool, it limits on the number of times creating the threads, and thus
 improving responsiveness.
 
-There are several implementation of thread pools, which you can set up using static factory methods in `Executor`:
+There are several implementations of thread pool, which you can set up using static factory methods in `Executor`:
 + `newFixedThreadPool`: A fixed‐size thread pool creates threads as tasks are submitted, up to the maximum pool size, 
 and then attempts to keep the pool size constant.
 + `newCachedThreadPool`: A cached thread pool has more flexibility to reap idle threads when the current size of the pool 

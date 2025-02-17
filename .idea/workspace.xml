@@ -5,21 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: include img">
-      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/3.-building-blocks/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/3.-building-blocks/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/markdown/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/markdown/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/markdown/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/markdown/index.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/syntax/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/syntax/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/blog/syntax/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/syntax/index.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/sitemap.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/sitemap.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
