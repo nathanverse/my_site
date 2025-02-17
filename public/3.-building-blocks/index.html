@@ -59,7 +59,7 @@ Thread-safe collections Variety of synchronizers, being able to coordinate the c
 1. Synchronized collections. Java libraries support synchronized collection classes such as Vector and Hashtable, part of the original JDK, as well as their cousins added in JDK 1.2, the synchronized wrapper classes created by the Collections.synchronizedXxx factory methods.">
   <meta itemprop="datePublished" content="2025-02-02T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-02-02T00:00:00+00:00">
-  <meta itemprop="wordCount" content="3353">
+  <meta itemprop="wordCount" content="3377">
   <meta itemprop="image" content="http://localhost:1313/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -419,7 +419,7 @@ concurrency comes from synchronized collection, including:</p>
 Concurrent collections are designed to be accessed by multiple threads and
 can offer dramatic scalability improvements with little risk.</li>
 </ul>
-<h1 id="21-concurrenthashmap">2.1. ConcurrentHashMap</h1>
+<h2 id="21-concurrenthashmap">2.1. ConcurrentHashMap</h2>
 <p>Rather than locking all operations to the <code>Map</code> states,
 <code>ConcurrentHashMap</code> uses certain techniques to enhance the scalability:</p>
 <ul>
@@ -466,7 +466,7 @@ This queue, though is beneficial in cases where you have multiple consumers read
 <li>Allow producers to know the state of the task when it is actually handled, unlike normal queue, where producers drop the task
 in a mailbox, knowing nothing about it.</li>
 </ul>
-<h1 id="31-example-desktop-search">3.1. Example: Desktop search</h1>
+<h2 id="31-example-desktop-search">3.1. Example: Desktop search</h2>
 <p>One type of program that is amenable to decomposition into producers and consumers is an agent that scans local drives (<code>DiskCrawler</code>)
 for documents and indexes them for later searching  (<code>Indexer</code>).</p>
 <p>Using producer-consumer patterns in this problem offers:</p>
@@ -595,7 +595,7 @@ for documents and indexes them for later searching  (<code>Indexer</code>).</p>
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h1 id="32-serial-thread-confinement">3.2. Serial Thread Confinement</h1>
+</div><h2 id="32-serial-thread-confinement">3.2. Serial Thread Confinement</h2>
 <p>To ensure thread-safety for a mutable variable, as mentioned, we can use thread confinement technique, where that object is handed off
 to another thread and released from the origin thread. This is particular useful for cases where deep copy is costly.</p>
 <p>Consider this problem: You have a database connection pool that manages a limited number of database connections, which is expensive
@@ -605,7 +605,7 @@ is not modified by another thread.</p>
 <p>This can be done by using blocking queues with a little more work, it could also be done with the atomic remove method of
 ConcurrentMap or the compareAndSet method of AtomicReference.</p>
 <p>You should do a little exercise to practice this concept.</p>
-<h1 id="33-deques-and-work-stealing">3.3. Deques and work stealing</h1>
+<h2 id="33-deques-and-work-stealing">3.3. Deques and work stealing</h2>
 <p><em>Deques and work stealing</em> is a different concurrency scheme other than <em>work sharing</em>, in which:</p>
 <ol>
 <li>Each thread has it own queue. Tasks, in this case, are distributed to the these queue for threads to compute.</li>
@@ -933,7 +933,8 @@ operation, we can enhance by making a thread wait on another thread computation&
 that two threads executing the operation at the same time without waiting the result of the other if you don&rsquo;t make put-if-absent operation
 of the <code>ConcurrentMap</code> atomic. Using <code>cache.putIfAbsent(arg, ft)</code> in the line 16 addressing this.</li>
 </ol>
-<p>That is the end of the chapter&hellip;&hellip;</p>
+<p>That is the end of the chapter&hellip;&hellip; I get so excited to use principles and tools of this chapter to build real things in the next
+chapter. Happy learning all ^_^.</p>
 
 </content>
 <p>
