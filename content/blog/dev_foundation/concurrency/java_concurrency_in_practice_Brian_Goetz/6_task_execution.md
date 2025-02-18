@@ -154,3 +154,60 @@ exceeds the demand for processing, and to add new threads when demand increases,
 The `newFixedThreadPool` and `newCachedThreadPool` factories return instances of the general‐purpose `ThreadPoolExecutor`, 
 which can also be used directly to construct more specialized executors. 
 
+## 2.2. Executor lifecycle
+Because executor is a service that run asynchronously to the app, you need a mechanism to shut down it gratefully, or else, 
+the JVM will not exist as there are still thread running.
+
+`ExecutorService` extends `Executor` to include several methods to manage the lifecycle of the `Executor` 
+
+```java {linenos=table}
+public interface ExecutorService extends Executor {
+    void shutdown();
+    List<Runnable> shutdownNow();
+    boolean isShutdown();
+    boolean isTerminated();
+    boolean awaitTermination(long timeout, TimeUnit unit)
+        throws InterruptedException;
+    //  ... additional convenience methods for task submission
+}
+```
+
++ `shutdown`: shut down the executor gratefully, new tasks will not be accepted. However, tasks are accepted but still are not run 
+still are allowed to be run.
++ `shutdownNow`: shutdown abruptly, tasks are queued but are not started yet will not begin.
++ `awaitTermination`: after shutting down the service, you can await on this method to wait until the executor stop running.
+
+## 2.3. Delayed and periodic tasks.
+Delayed tasks are tasks that we ask to execute after a certain period has passed, while periodic tasks are tasks that are executed
+at a specific time overtime.
+
+`Timer` is an obsolete use for this kind of problem. Its drawbacks are:
++ Using only one thread: another `TimerTask` might be not executed at the time it
+is supposed to due to waiting other threads.
++ Handle exception poorly: if a task throw exception while running, it cancels the whole `Timer`. In this case, we usually need it
+to recover and run other tasks instead.
+  + Also, if the initial task throw exception to fast, it causes the main thread to cancel too. As illustrated in following code, the code
+  is supposed to end after 6 seconds, but it might return after 1 second.
+
+
+```java {linenos=table}
+public class OutOfTime {
+    public static void main(String[] args) throws Exception {
+        Timer timer = new Timer();
+        timer.schedule(new ThrowTask(), 1);
+        SECONDS.sleep(1);
+        timer.schedule(new ThrowTask(), 1);
+        SECONDS.sleep(5);
+    }
+    
+    static class ThrowTask extends TimerTask {
+        public void run() { throw new RuntimeException(); }
+    } 
+}
+```
+
+Using `ScheduledThreadPoolExecutor` you can address these problems. Two implementations you might want to test include `DelayQueue` and
+`BlockingQueue`
+
+## 2.3. Finding the exploitable parallelism
+

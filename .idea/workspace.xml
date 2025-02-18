@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: include img">
+    <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: fix spelling">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" afterDir="false" />
     </list>
@@ -96,7 +96,23 @@
       <option name="project" value="LOCAL" />
       <updated>1736939915339</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="chore: fix spelling">
+      <option name="closed" value="true" />
+      <created>1739761704807</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1739761704807</updated>
+    </task>
+    <task id="LOCAL-00006" summary="chore: fix spelling">
+      <option name="closed" value="true" />
+      <created>1739761756236</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1739761756236</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -146,6 +162,7 @@
     <MESSAGE value="chore: add a bit lession in chapter 4" />
     <MESSAGE value="chore: add a bit lesson in chapter 4" />
     <MESSAGE value="chore: include img" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore: include img" />
+    <MESSAGE value="chore: fix spelling" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: fix spelling" />
   </component>
 </project>
