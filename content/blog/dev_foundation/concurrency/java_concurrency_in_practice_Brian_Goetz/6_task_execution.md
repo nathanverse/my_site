@@ -209,5 +209,145 @@ public class OutOfTime {
 Using `ScheduledThreadPoolExecutor` you can address these problems. Two implementations you might want to test include `DelayQueue` and
 `BlockingQueue`
 
-## 2.3. Finding the exploitable parallelism
+# 3. Finding the exploitable parallelism
 
+The more sensible and proper your task is divided to run in parallel, the more you will gain from concurrency. This sections walk you
+through an example to help you understand the idea of finding the exploitable parallelism.
+
+## 3.1. Example: Sequential Page Renderer
+Our task is to implement a HTML renderer with the input being a HTML document, which can contain images and text, and output
+bing an image buffer, which would be used by another components to render the page.
+
+```java {linenos=table}
+public class SingleThreadRenderer {
+    void renderPage(CharSequence source) {
+        renderText(source);
+        List<ImageData> imageData = new ArrayList<ImageData>();
+        for (ImageInfo imageInfo : scanForImageInfo(source))
+            imageData.add(imageInfo.downloadImage());
+        for (ImageData data : imageData)
+            renderImage(data);
+    }
+}
+```
+
+A simple idea can be to render as-you-go with one thread, like `SingleThreadRenderer` above. However, when an image is downloaded from the network
+, the CPU become idle, as this is an I/O bound task, while you can spend this time to render the text instead.
+
+## 3.2. Example: Page Renderer with `Future`
+The next idea is to delegate the load of images into an executor, while the main thread render text. After the text is done, we pick up on each
+thread result and render if it is downloaded like the following `FutureRenderer` implementation .
+
+```java {linenos=table}
+public class FutureRenderer {
+    private final ExecutorService executor = ...;
+    void renderPage(CharSequence source) {
+        final List<ImageInfo> imageInfos = scanForImageInfo(source);
+        Callable<List<ImageData>> task =
+                new Callable<List<ImageData>>() {
+                    public List<ImageData> call() {
+                        List<ImageData> result
+                                = new ArrayList<ImageData>();
+                        for (ImageInfo imageInfo : imageInfos)
+                            result.add(imageInfo.downloadImage());
+                        return result;
+                    }
+                };
+        
+        Future<List<ImageData>> future =  executor.submit(task);
+        renderText(source);
+        try {
+            List<ImageData> imageData =  future.get();
+            for (ImageData data : imageData)
+                renderImage(data);
+        } catch (InterruptedException e) {
+            // Re-assert the thread's interrupted status
+            Thread.currentThread().interrupt();
+            // We don't need the result, so cancel the task too
+            future.cancel(true);
+        } catch (ExecutionException e) {
+            throw launderThrowable(e.getCause());
+        }
+    }
+}
+```
+
+This exploits some parallelism, but we can do considerably better. All images can be downloaded concurrently instead of one waiting for another.
+
+## 3.3. Example: Page Renderer with `CompletionService`
+`CompletionService` combines the functionality of an `Executor` and a `BlockingQueue` allowing you to send a collection of tasks to an `Executor`
+and call `take` to retrieve the result as there is any available. This prevents you to keep the list of  `Future` for the tasks and
+repetitively iterate over the list to check the completed result, like checking if an image is downloaded from the network.
+
+
+```java {linenos=table}
+public class Renderer {
+    private final ExecutorService executor;
+    Renderer(ExecutorService executor) { this.executor = executor; }
+    void renderPage(CharSequence source) {
+        final List<ImageInfo> info = scanForImageInfo(source);
+        CompletionService<ImageData> completionService =
+                new ExecutorCompletionService<ImageData>(executor);
+        for (final ImageInfo imageInfo : info)
+            completionService.submit(new Callable<ImageData>() {
+                 public ImageData call() {
+                     return imageInfo.downloadImage();
+                 }
+            });
+        renderText(source);
+        try {
+            for(intt=0,n= info.size();t<n; t++){
+                Future<ImageData> f = completionService.take();
+                ImageData imageData = f.get();
+                renderImage(imageData);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            throw launderThrowable(e.getCause());
+        }
+    }
+}
+```
+
+The above implementation improve the renderer by create a task for each image want to download from the network and send them to a pool
+of threads in `Executor` to execute. Hence, we can be able to load multiple images at the same time, and render them as they are available.
+
+## 3.4. Placing time limits on tasks.
+Sometimes, you need to limit the time a task can be executed before it is aborted. For example, when you load ads for your website, you might
+want to load the default ads if the ads from your providers take too long to return.
+
+`Future` can help you do this with timeout method of `get`, `cancel` as the cancellation method for the task. For example:
+
+```java {linenos=table}
+Page renderPageWithAd() throws InterruptedException {
+    long endNanos = System.nanoTime() + TIME_BUDGET;
+    Future<Ad> f = exec.submit(new FetchAdTask());
+    // Render the page while waiting for the ad
+    Page page = renderPageBody();
+    Ad ad;
+    try {
+        // Only wait for the remaining time budget
+        long timeLeft = endNanos - System.nanoTime();
+        ad = f.get(timeLeft, NANOSECONDS);
+    } catch (ExecutionException e) {
+        ad = DEFAULT_AD;
+    } catch (TimeoutException e) {
+        ad = DEFAULT_AD;
+        f.cancel(true);
+    }
+    page.setAd(ad);
+    return page;
+}
+```
+
+You can also use timeout version `invokeAll` of `ExecutorService`, this method will accept the list of tasks, and return `Future`
+when all tasks have been done, interrupted, or the timeout expires. Any tasks that are not complete when the timeout expires are cancelled. 
+On return from `invokeAll`, each task will have either completed normally or been cancelled; the client code can call get or 
+`isCancelled` to find out which.
+
+## 3.5. Limitations of Parallelizing Heterogeneous Tasks
+There are a note when you divide the tasks for execution. It is more significantly beneficial if your tasks are homogeneous instead of
+heterogeneous because the code will be much more simple and easy to scale. Imaging if you receive more workload from a task, 
+but rather than you allocate more resource to that task, you allocate for the other types of tasks too which brings little benefit and may
+also introduce performance suffering as it requires more coordination overhead when you introduce more worker threads.
