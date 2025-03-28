@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="chore: fix spelling">
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/_index.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/1_introduction_to_scale.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/2_back_of_envelope.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/_index.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/6_task_execution.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
