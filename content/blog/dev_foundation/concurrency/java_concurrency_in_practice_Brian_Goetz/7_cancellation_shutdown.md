@@ -20,9 +20,9 @@ There is no safe way to preemptively stop a thread in Java, and therefore no saf
 mechanisms, in which the task requested to be interrupted must agree do so.
 
 Cancellation policy of a task involves, *how*, *when*, *what*:
-+ How other code can request cancellation.
-+ When the task checks whether cancellation has been requested.
-+ What actions the task takes in response to a cancellation request.
++ How other code can request cancellation?
++ When the task checks whether cancellation has been requested?
++ What actions the task takes in response to a cancellation request?
 
 Considering following codes:
 
