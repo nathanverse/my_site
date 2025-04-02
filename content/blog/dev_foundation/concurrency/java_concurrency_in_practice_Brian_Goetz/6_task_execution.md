@@ -110,8 +110,8 @@ class TaskExecutionWebServer {
                     handleRequest(connection);
                 }
             };
+            exec.execute(task);
         }
-        exec.execute(task);
     }
 }
 ```
@@ -147,16 +147,15 @@ and then attempts to keep the pool size constant.
 + `newCachedThreadPool`: A cached thread pool has more flexibility to reap idle threads when the current size of the pool 
 exceeds the demand for processing, and to add new threads when demand increases, but places no bounds on the size of the pool.
 + `newScheduledThreadPool`. A fixed‐size thread pool that supports delayed and periodic task execution, similar to `Timer`.
-+ `newSingleThreadExecutor`. A single‐threaded executor creates a single worker thread to process tasks, replacing it if it dies 
-+ unexpectedly. Tasks are guaranteed to be processed sequentially according to the order imposed by the task queue 
-+ (FIFO, LIFO, priority order).
++ `newSingleThreadExecutor`. A single‐threaded executor creates a single worker thread to process tasks, replacing it if it dies unexpectedly. 
+Tasks are guaranteed to be processed sequentially according to the order imposed by the task queue (FIFO, LIFO, priority order).
 
 The `newFixedThreadPool` and `newCachedThreadPool` factories return instances of the general‐purpose `ThreadPoolExecutor`, 
 which can also be used directly to construct more specialized executors. 
 
 ## 2.2. Executor lifecycle
 Because executor is a service that run asynchronously to the app, you need a mechanism to shut down it gratefully, or else, 
-the JVM will not exist as there are still thread running.
+the JVM will not exit as there are still thread running.
 
 `ExecutorService` extends `Executor` to include several methods to manage the lifecycle of the `Executor` 
 
@@ -182,8 +181,7 @@ Delayed tasks are tasks that we ask to execute after a certain period has passed
 at a specific time overtime.
 
 `Timer` is an obsolete use for this kind of problem. Its drawbacks are:
-+ Using only one thread: another `TimerTask` might be not executed at the time it
-is supposed to due to waiting other threads.
++ Using only one thread: a `TimerTask`, which, for example, need to run every 2ms, might be executed in a rapid succession if another task run before it take more than 4ms to run.
 + Handle exception poorly: if a task throw exception while running, it cancels the whole `Timer`. In this case, we usually need it
 to recover and run other tasks instead.
   + Also, if the initial task throw exception to fast, it causes the main thread to cancel too. As illustrated in following code, the code
@@ -211,12 +209,12 @@ Using `ScheduledThreadPoolExecutor` you can address these problems. Two implemen
 
 # 3. Finding the exploitable parallelism
 
-The more sensible and proper your task is divided to run in parallel, the more you will gain from concurrency. This sections walk you
+The more sensible and proper your task is divided to run in parallel, the more you will gain from concurrency. This section walks you
 through an example to help you understand the idea of finding the exploitable parallelism.
 
 ## 3.1. Example: Sequential Page Renderer
 Our task is to implement a HTML renderer with the input being a HTML document, which can contain images and text, and output
-bing an image buffer, which would be used by another components to render the page.
+being an image buffer, which would be used by another components to render the page.
 
 ```java {linenos=table}
 public class SingleThreadRenderer {
