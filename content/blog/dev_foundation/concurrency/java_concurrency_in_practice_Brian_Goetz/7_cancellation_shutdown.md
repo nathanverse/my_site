@@ -202,7 +202,7 @@ the `timedOut` return because the task is timeout or it completes earlier, eithe
 first or the thread continues and exits first, which is risky to assumes.
 
 ## 1.4. Cancellation Via Future.
-Now let move on to use the new and convenient tools `Future`. Following is the code that address all the *Timed out task* problems
+Now, let move on to use the new and convenient tools `Future`. Following is the code that address all the *Timed out task* problems
 by using `Future`:
 
 ```java {linenos=table}
@@ -222,11 +222,107 @@ public static void timedRun(Runnable r,long timeout, TimeUnit unit) throws Inter
 }
 ```
 
-1. **Line 2**: By default, we have a standard `Executor`, which is `taskExec` which we can use `submit()` method to assign a task to a specific 
+1. **Line 3**: By default, we have a standard `Executor`, which is `taskExec` which we can use `submit()` method to assign a task to a specific 
 thread to execute.
-2. **Line 3**: The `submit()` method returns `Future` which the main thread can use `get(timeout, unit)` method to wait for the execution. This
+2. **Line 4**: The `submit()` method returns `Future` which the main thread can use `get(timeout, unit)` method to wait for the execution. This
 method will throw `TimeoutException` if it times out (in this case the task may still be executing), unchecked exception of the task.
-3. The task can be canceled through `Future.cancel()` method. The boolean param, if `true` indicates that the thread and the task should be interrupted,
+3. **Line 13**: The task can be canceled through `Future.cancel()` method. The boolean param, if `true` indicates that the thread and the task should be interrupted,
 if `false`, it doesn't interrupt anything and only indicate that the task should not be executed if it hasn't been executed.
 
 The `cancel()` is reasonable as we know what thread cancellation policy is as `Executor` is designed to abort the thread if the task is canceled.
+
+## 1.5. Dealing with Non-interruptible blocking:
+Many blocking library methods check the `interrupted` flag of the thread and throw `InterruptedException` if it is true. This allows
+you easily craft the responsive method. However, there are some which haven't reacted to the interrupt signals. In this case, we may interrupt
+thread by different methods, but this requires the greater awareness of such blocking methods and their consequences.
+
+For example, synchronous socket I/O in java.io has `InputStream` and `OutputStream` with respectively `read()` and `write()` methods that aren't 
+responsive to the interruption. However, close the underlying socket can make any threads blocked throw a `SocketException`.
+
+Following is an example, in which `ReaderThread` which constantly read new data into `processBuffer` and is interrupted by using
+`socket.close()`
+
+```java {linenos=table}
+public class ReaderThread extends Thread {
+    private final Socket socket;
+    private final InputStream in;
+
+    public ReaderThread(Socket socket) throws IOException {
+        this.socket = socket;
+        this.in = socket.getInputStream();
+    }
+
+    public void interrupt() {
+        try {
+            socket.close();
+        } catch (IOException ignored) {
+        } finally {
+            super.interrupt();
+        }
+    }
+
+    public void run() {
+        try {
+            byte[] buf = new byte[BUFSZ];
+            while (true) {
+                int count = in.read(buf);
+                if (count < 0)
+                    break;
+                else if (count > 0)
+                    processBuffer(buf, count);
+            } 
+        } catch (IOException e) { /*  Allow thread to exit  */  }
+    }
+}
+```
+
+We can wrap the logic of canceling by closing the socket into a `Future` too by taking advantage of `newTaskFor` method of `Executor`.
+`newTaskFor` is a factory method that allows us to create return own our `Future` after a `Callable` is submitted through
+`Executor.submit`. We can implement the new type of `Future` which has `cancel` method to close the socket set to it. Following is the
+implementation
+```java {linenos=table}
+public interface CancellableTask<T> extends Callable<T> {
+    void cancel();
+    RunnableFuture<T> newTask();
+}
+
+@ThreadSafe
+public class CancellingExecutor extends ThreadPoolExecutor {
+    ...
+    protected<T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
+        if (callable instanceof CancellableTask)
+            return ((CancellableTask<T>) callable).newTask();
+        else
+            return super.newTaskFor(callable);
+    } 
+}
+
+public abstract class SocketUsingTask<T> implements CancellableTask<T> {
+    @GuardedBy("this")
+    private Socket socket;
+
+    protected synchronized void setSocket(Socket s) {
+        socket = s;
+    }
+
+    public synchronized void cancel() {
+        try {
+            if (socket != null)
+                socket.close();
+        } catch (IOException ignored) {
+        }
+    }
+
+    public RunnableFuture<T> newTask() {
+        return new FutureTask<T>(this) {
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                try {
+                    SocketUsingTask.this.cancel();
+                } finally {
+                    return super.cancel(mayInterruptIfRunning);
+                }
+            }
+        };
+    }
+}
+```

@@ -51,7 +51,7 @@ Better concurrency as independent tasks can be executed in parallel if there are
 Better concurrency as independent tasks can be executed in parallel if there are adequate processing resources. Good throughput and responsiveness. Graceful degradation. For example, oftentimes, we see server application choose to separate each client request as a task boundary. This helps a task not being affected by other tasks. Also, one message is easy to digest and require a very small percentage of server’s total capacity.">
   <meta itemprop="datePublished" content="2025-02-17T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-02-17T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1091">
+  <meta itemprop="wordCount" content="2378">
   <meta itemprop="image" content="http://localhost:1313/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -376,7 +376,7 @@ deployment time that is matched to the available hardware.</p>
 </blockquote>
 <p>For example, you can benchmark to check the number of threads sufficient to run on your limited memory and CPUs and tool the <code>Executor</code>
 accordingly.</p>
-<p>Following is a webserver using `Executor:</p>
+<p>Following is a webserver using <code>Executor</code>:</p>
 <div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
 <table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
 <pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
@@ -413,8 +413,8 @@ accordingly.</p>
 </span></span><span style="display:flex;"><span>                    handleRequest(connection);
 </span></span><span style="display:flex;"><span>                }
 </span></span><span style="display:flex;"><span>            };
+</span></span><span style="display:flex;"><span>            exec.<span style="color:#a6e22e">execute</span>(task);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        exec.<span style="color:#a6e22e">execute</span>(task);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></td></tr></table>
@@ -442,24 +442,334 @@ implementation in the web server itself.</p>
 </div><p><code>Executor</code> can also opens the door to all sorts of additional opportunities for tuning, management, monitoring, logging, error reporting,
 and other possibilities that would have been far more difficult to add without a task execution framework.</p>
 <h2 id="21-thread-pools">2.1. Thread pools:</h2>
-<p>Thread pools executor place a limit on number of worker threads can be created. Each worker thread, in turn of execution, take a task
+<p>Thread pools executor place a limit on number of worker threads can be created. Each worker thread, in turn of execution, takes a task
 from a task queue (which can be bounded or unbounded, though unbounded one can cause out of memory) and execute.</p>
-<p><em>Thread-pool</em> approach not only address those problems mentioned in <a href="#unbounded-thread">Section 1.3</a>, as it creates thread
+<p><em>Thread-pool</em> approach not only addresses those problems mentioned in <a href="#unbounded-thread">Section 1.3</a>, as it creates thread
 only there are number of requests exceeding the current size of the pool, it limits on the number of times creating the threads, and thus
 improving responsiveness.</p>
-<p>There are several implementation of thread pools, which you can set up using static factory methods in <code>Executor</code>:</p>
+<p>There are several implementations of thread pool, which you can set up using static factory methods in <code>Executor</code>:</p>
 <ul>
 <li><code>newFixedThreadPool</code>: A fixed‐size thread pool creates threads as tasks are submitted, up to the maximum pool size,
 and then attempts to keep the pool size constant.</li>
 <li><code>newCachedThreadPool</code>: A cached thread pool has more flexibility to reap idle threads when the current size of the pool
 exceeds the demand for processing, and to add new threads when demand increases, but places no bounds on the size of the pool.</li>
 <li><code>newScheduledThreadPool</code>. A fixed‐size thread pool that supports delayed and periodic task execution, similar to <code>Timer</code>.</li>
-<li><code>newSingleThreadExecutor</code>. A single‐threaded executor creates a single worker thread to process tasks, replacing it if it dies</li>
-<li>unexpectedly. Tasks are guaranteed to be processed sequentially according to the order imposed by the task queue</li>
-<li>(FIFO, LIFO, priority order).</li>
+<li><code>newSingleThreadExecutor</code>. A single‐threaded executor creates a single worker thread to process tasks, replacing it if it dies unexpectedly.
+Tasks are guaranteed to be processed sequentially according to the order imposed by the task queue (FIFO, LIFO, priority order).</li>
 </ul>
 <p>The <code>newFixedThreadPool</code> and <code>newCachedThreadPool</code> factories return instances of the general‐purpose <code>ThreadPoolExecutor</code>,
 which can also be used directly to construct more specialized executors.</p>
+<h2 id="22-executor-lifecycle">2.2. Executor lifecycle</h2>
+<p>Because executor is a service that run asynchronously to the app, you need a mechanism to shut down it gratefully, or else,
+the JVM will not exit as there are still thread running.</p>
+<p><code>ExecutorService</code> extends <code>Executor</code> to include several methods to manage the lifecycle of the <code>Executor</code></p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">ExecutorService</span> <span style="color:#66d9ef">extends</span> Executor {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">shutdown</span>();
+</span></span><span style="display:flex;"><span>    List<span style="color:#f92672">&lt;</span>Runnable<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">shutdownNow</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">isShutdown</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">isTerminated</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">awaitTermination</span>(<span style="color:#66d9ef">long</span> timeout, TimeUnit unit)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throws</span> InterruptedException;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//  ... additional convenience methods for task submission</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>shutdown</code>: shut down the executor gratefully, new tasks will not be accepted. However, tasks are accepted but still are not run
+still are allowed to be run.</li>
+<li><code>shutdownNow</code>: shutdown abruptly, tasks are queued but are not started yet will not begin.</li>
+<li><code>awaitTermination</code>: after shutting down the service, you can await on this method to wait until the executor stop running.</li>
+</ul>
+<h2 id="23-delayed-and-periodic-tasks">2.3. Delayed and periodic tasks.</h2>
+<p>Delayed tasks are tasks that we ask to execute after a certain period has passed, while periodic tasks are tasks that are executed
+at a specific time overtime.</p>
+<p><code>Timer</code> is an obsolete use for this kind of problem. Its drawbacks are:</p>
+<ul>
+<li>Using only one thread: a <code>TimerTask</code>, which, for example, need to run every 2ms, might be executed in a rapid succession if another task run before it take more than 4ms to run.</li>
+<li>Handle exception poorly: if a task throw exception while running, it cancels the whole <code>Timer</code>. In this case, we usually need it
+to recover and run other tasks instead.
+<ul>
+<li>Also, if the initial task throw exception to fast, it causes the main thread to cancel too. As illustrated in following code, the code
+is supposed to end after 6 seconds, but it might return after 1 second.</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">OutOfTime</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">main</span>(String<span style="color:#f92672">[]</span> args) <span style="color:#66d9ef">throws</span> Exception {
+</span></span><span style="display:flex;"><span>        Timer timer <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Timer();
+</span></span><span style="display:flex;"><span>        timer.<span style="color:#a6e22e">schedule</span>(<span style="color:#66d9ef">new</span> ThrowTask(), 1);
+</span></span><span style="display:flex;"><span>        SECONDS.<span style="color:#a6e22e">sleep</span>(1);
+</span></span><span style="display:flex;"><span>        timer.<span style="color:#a6e22e">schedule</span>(<span style="color:#66d9ef">new</span> ThrowTask(), 1);
+</span></span><span style="display:flex;"><span>        SECONDS.<span style="color:#a6e22e">sleep</span>(5);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ThrowTask</span> <span style="color:#66d9ef">extends</span> TimerTask {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() { <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> RuntimeException(); }
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Using <code>ScheduledThreadPoolExecutor</code> you can address these problems. Two implementations you might want to test include <code>DelayQueue</code> and
+<code>BlockingQueue</code></p>
+<h1 id="3-finding-the-exploitable-parallelism">3. Finding the exploitable parallelism</h1>
+<p>The more sensible and proper your task is divided to run in parallel, the more you will gain from concurrency. This section walks you
+through an example to help you understand the idea of finding the exploitable parallelism.</p>
+<h2 id="31-example-sequential-page-renderer">3.1. Example: Sequential Page Renderer</h2>
+<p>Our task is to implement a HTML renderer with the input being a HTML document, which can contain images and text, and output
+being an image buffer, which would be used by another components to render the page.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SingleThreadRenderer</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">renderPage</span>(CharSequence source) {
+</span></span><span style="display:flex;"><span>        renderText(source);
+</span></span><span style="display:flex;"><span>        List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span> imageData <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (ImageInfo imageInfo : scanForImageInfo(source))
+</span></span><span style="display:flex;"><span>            imageData.<span style="color:#a6e22e">add</span>(imageInfo.<span style="color:#a6e22e">downloadImage</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (ImageData data : imageData)
+</span></span><span style="display:flex;"><span>            renderImage(data);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>A simple idea can be to render as-you-go with one thread, like <code>SingleThreadRenderer</code> above. However, when an image is downloaded from the network
+, the CPU become idle, as this is an I/O bound task, while you can spend this time to render the text instead.</p>
+<h2 id="32-example-page-renderer-with-future">3.2. Example: Page Renderer with <code>Future</code></h2>
+<p>The next idea is to delegate the load of images into an executor, while the main thread render text. After the text is done, we pick up on each
+thread result and render if it is downloaded like the following <code>FutureRenderer</code> implementation .</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FutureRenderer</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> ExecutorService executor <span style="color:#f92672">=</span> ...;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">renderPage</span>(CharSequence source) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>ImageInfo<span style="color:#f92672">&gt;</span> imageInfos <span style="color:#f92672">=</span> scanForImageInfo(source);
+</span></span><span style="display:flex;"><span>        Callable<span style="color:#f92672">&lt;</span>List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;&gt;</span> task <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">new</span> Callable<span style="color:#f92672">&lt;</span>List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;&gt;</span>() {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">public</span> List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">call</span>() {
+</span></span><span style="display:flex;"><span>                        List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span> result
+</span></span><span style="display:flex;"><span>                                <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">for</span> (ImageInfo imageInfo : imageInfos)
+</span></span><span style="display:flex;"><span>                            result.<span style="color:#a6e22e">add</span>(imageInfo.<span style="color:#a6e22e">downloadImage</span>());
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">return</span> result;
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                };
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        Future<span style="color:#f92672">&lt;</span>List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;&gt;</span> future <span style="color:#f92672">=</span>  executor.<span style="color:#a6e22e">submit</span>(task);
+</span></span><span style="display:flex;"><span>        renderText(source);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            List<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span> imageData <span style="color:#f92672">=</span>  future.<span style="color:#a6e22e">get</span>();
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (ImageData data : imageData)
+</span></span><span style="display:flex;"><span>                renderImage(data);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (InterruptedException e) {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// Re-assert the thread&#39;s interrupted status</span>
+</span></span><span style="display:flex;"><span>            Thread.<span style="color:#a6e22e">currentThread</span>().<span style="color:#a6e22e">interrupt</span>();
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// We don&#39;t need the result, so cancel the task too</span>
+</span></span><span style="display:flex;"><span>            future.<span style="color:#a6e22e">cancel</span>(<span style="color:#66d9ef">true</span>);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (ExecutionException e) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">throw</span> launderThrowable(e.<span style="color:#a6e22e">getCause</span>());
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This exploits some parallelism, but we can do considerably better. All images can be downloaded concurrently instead of one waiting for another.</p>
+<h2 id="33-example-page-renderer-with-completionservice">3.3. Example: Page Renderer with <code>CompletionService</code></h2>
+<p><code>CompletionService</code> combines the functionality of an <code>Executor</code> and a <code>BlockingQueue</code> allowing you to send a collection of tasks to an <code>Executor</code>
+and call <code>take</code> to retrieve the result as there is any available. This prevents you to keep the list of  <code>Future</code> for the tasks and
+repetitively iterate over the list to check the completed result, like checking if an image is downloaded from the network.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Renderer</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> ExecutorService executor;
+</span></span><span style="display:flex;"><span>    Renderer(ExecutorService executor) { <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">executor</span> <span style="color:#f92672">=</span> executor; }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">renderPage</span>(CharSequence source) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>ImageInfo<span style="color:#f92672">&gt;</span> info <span style="color:#f92672">=</span> scanForImageInfo(source);
+</span></span><span style="display:flex;"><span>        CompletionService<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span> completionService <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">new</span> ExecutorCompletionService<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span>(executor);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">final</span> ImageInfo imageInfo : info)
+</span></span><span style="display:flex;"><span>            completionService.<span style="color:#a6e22e">submit</span>(<span style="color:#66d9ef">new</span> Callable<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span>() {
+</span></span><span style="display:flex;"><span>                 <span style="color:#66d9ef">public</span> ImageData <span style="color:#a6e22e">call</span>() {
+</span></span><span style="display:flex;"><span>                     <span style="color:#66d9ef">return</span> imageInfo.<span style="color:#a6e22e">downloadImage</span>();
+</span></span><span style="display:flex;"><span>                 }
+</span></span><span style="display:flex;"><span>            });
+</span></span><span style="display:flex;"><span>        renderText(source);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span>(intt<span style="color:#f92672">=</span>0,n<span style="color:#f92672">=</span> info.<span style="color:#a6e22e">size</span>();t<span style="color:#f92672">&lt;</span>n; t<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>                Future<span style="color:#f92672">&lt;</span>ImageData<span style="color:#f92672">&gt;</span> f <span style="color:#f92672">=</span> completionService.<span style="color:#a6e22e">take</span>();
+</span></span><span style="display:flex;"><span>                ImageData imageData <span style="color:#f92672">=</span> f.<span style="color:#a6e22e">get</span>();
+</span></span><span style="display:flex;"><span>                renderImage(imageData);
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (InterruptedException e) {
+</span></span><span style="display:flex;"><span>            Thread.<span style="color:#a6e22e">currentThread</span>().<span style="color:#a6e22e">interrupt</span>();
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (ExecutionException e) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">throw</span> launderThrowable(e.<span style="color:#a6e22e">getCause</span>());
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The above implementation improve the renderer by create a task for each image want to download from the network and send them to a pool
+of threads in <code>Executor</code> to execute. Hence, we can be able to load multiple images at the same time, and render them as they are available.</p>
+<h2 id="34-placing-time-limits-on-tasks">3.4. Placing time limits on tasks.</h2>
+<p>Sometimes, you need to limit the time a task can be executed before it is aborted. For example, when you load ads for your website, you might
+want to load the default ads if the ads from your providers take too long to return.</p>
+<p><code>Future</code> can help you do this with timeout method of <code>get</code>, <code>cancel</code> as the cancellation method for the task. For example:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>Page <span style="color:#a6e22e">renderPageWithAd</span>() <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> endNanos <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">nanoTime</span>() <span style="color:#f92672">+</span> TIME_BUDGET;
+</span></span><span style="display:flex;"><span>    Future<span style="color:#f92672">&lt;</span>Ad<span style="color:#f92672">&gt;</span> f <span style="color:#f92672">=</span> exec.<span style="color:#a6e22e">submit</span>(<span style="color:#66d9ef">new</span> FetchAdTask());
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Render the page while waiting for the ad</span>
+</span></span><span style="display:flex;"><span>    Page page <span style="color:#f92672">=</span> renderPageBody();
+</span></span><span style="display:flex;"><span>    Ad ad;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Only wait for the remaining time budget</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">long</span> timeLeft <span style="color:#f92672">=</span> endNanos <span style="color:#f92672">-</span> System.<span style="color:#a6e22e">nanoTime</span>();
+</span></span><span style="display:flex;"><span>        ad <span style="color:#f92672">=</span> f.<span style="color:#a6e22e">get</span>(timeLeft, NANOSECONDS);
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (ExecutionException e) {
+</span></span><span style="display:flex;"><span>        ad <span style="color:#f92672">=</span> DEFAULT_AD;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (TimeoutException e) {
+</span></span><span style="display:flex;"><span>        ad <span style="color:#f92672">=</span> DEFAULT_AD;
+</span></span><span style="display:flex;"><span>        f.<span style="color:#a6e22e">cancel</span>(<span style="color:#66d9ef">true</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    page.<span style="color:#a6e22e">setAd</span>(ad);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> page;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>You can also use timeout version <code>invokeAll</code> of <code>ExecutorService</code>, this method will accept the list of tasks, and return <code>Future</code>
+when all tasks have been done, interrupted, or the timeout expires. Any tasks that are not complete when the timeout expires are cancelled.
+On return from <code>invokeAll</code>, each task will have either completed normally or been cancelled; the client code can call get or
+<code>isCancelled</code> to find out which.</p>
+<h2 id="35-limitations-of-parallelizing-heterogeneous-tasks">3.5. Limitations of Parallelizing Heterogeneous Tasks</h2>
+<p>There are a note when you divide the tasks for execution. It is more significantly beneficial if your tasks are homogeneous instead of
+heterogeneous because the code will be much more simple and easy to scale. Imaging if you receive more workload from a task,
+but rather than you allocate more resource to that task, you allocate for the other types of tasks too which brings little benefit and may
+also introduce performance suffering as it requires more coordination overhead when you introduce more worker threads.</p>
 
 </content>
 <p>

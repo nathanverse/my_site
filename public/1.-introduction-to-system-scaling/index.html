@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>1. Introduction to system scaling | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="1. Introduction to system scaling" />
+<meta name="description" content="Chapter 1: Scale from zero to millions of users
+I. Database replication
+Master-slave model offers several benefits
+
+Better performance: Parallel processing by multiple read nodes.
+Reliability: Data replication all over nodes.
+High availability:  if a database is offline as you can access data stored in another database server.
+
+In this model, when a master goes offline, a slave node will be selected and promoted to a new master.
+In real life, this process can be challenging because the slave node might not have the up-to-date data.
+Please refer to following materials if you want to understand techniques to solve this problem, which may be complex, 1,
+2." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/1.-introduction-to-system-scaling/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="1. Introduction to system scaling">
+  <meta property="og:description" content="Chapter 1: Scale from zero to millions of users I. Database replication Master-slave model offers several benefits
+Better performance: Parallel processing by multiple read nodes. Reliability: Data replication all over nodes. High availability: if a database is offline as you can access data stored in another database server. In this model, when a master goes offline, a slave node will be selected and promoted to a new master. In real life, this process can be challenging because the slave node might not have the up-to-date data. Please refer to following materials if you want to understand techniques to solve this problem, which may be complex, 1, 2.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-03-28T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-03-28T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="1. Introduction to system scaling">
+  <meta name="twitter:description" content="Chapter 1: Scale from zero to millions of users I. Database replication Master-slave model offers several benefits
+Better performance: Parallel processing by multiple read nodes. Reliability: Data replication all over nodes. High availability: if a database is offline as you can access data stored in another database server. In this model, when a master goes offline, a slave node will be selected and promoted to a new master. In real life, this process can be challenging because the slave node might not have the up-to-date data. Please refer to following materials if you want to understand techniques to solve this problem, which may be complex, 1, 2.">
+
+
+
+
+  <meta itemprop="name" content="1. Introduction to system scaling">
+  <meta itemprop="description" content="Chapter 1: Scale from zero to millions of users I. Database replication Master-slave model offers several benefits
+Better performance: Parallel processing by multiple read nodes. Reliability: Data replication all over nodes. High availability: if a database is offline as you can access data stored in another database server. In this model, when a master goes offline, a slave node will be selected and promoted to a new master. In real life, this process can be challenging because the slave node might not have the up-to-date data. Please refer to following materials if you want to understand techniques to solve this problem, which may be complex, 1, 2.">
+  <meta itemprop="datePublished" content="2025-03-28T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-03-28T00:00:00+00:00">
+  <meta itemprop="wordCount" content="815">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>1. Introduction to system scaling</h1>
+<p>
+  <i>
+    <time datetime='2025-03-28' pubdate>
+      28 Mar, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="chapter-1-scale-from-zero-to-millions-of-users">Chapter 1: Scale from zero to millions of users</h1>
+<h2 id="i-database-replication">I. Database replication</h2>
+<p>Master-slave model offers several benefits</p>
+<ol>
+<li>Better performance: Parallel processing by multiple read nodes.</li>
+<li>Reliability: Data replication all over nodes.</li>
+<li>High availability:  if a database is offline as you can access data stored in another database server.</li>
+</ol>
+<p>In this model, when a master goes offline, a slave node will be selected and promoted to a new master.
+In real life, this process can be challenging because the slave node might not have the up-to-date data.
+Please refer to following materials if you want to understand techniques to solve this problem, which may be complex, <a href="https://en.wikipedia.org/wiki/Multi-master_replication">1</a>,
+<a href="https://dev.mysql.com/doc/refman/5.7/en/mysql-cluster-replication-multi-master.html">2</a>.</p>
+<h2 id="ii-improve-latency">II. Improve latency</h2>
+<h3 id="considerations-for-using-cache">Considerations for using cache</h3>
+<p>Cache is used when data is read frequently but modified infrequently.</p>
+<p>Consistency is the caching problem that ensure to keep data in cache and data storage
+in sync. When scaling across multiple regions, maintaining consistency is challenging,
+for further details, please referring to “Scaling Memcache at Facebook” published by Facebook.</p>
+<h3 id="consideration-using-cdn">Consideration using CDN</h3>
+<ul>
+<li>Cost: CDN is a third-party provider which charges you based on the amount of data transferred
+in and out. Considering to store only frequently-read data is essential to reduce cost.</li>
+<li>CDN fallback: any problem with CDN should trigger fallback to load data from the origin.</li>
+<li>Invalidating files: You can call CDN provided API to update or implement URL versioning for the
+data object.</li>
+</ul>
+<h3 id="data-center">Data center</h3>
+<p>Supporting multiple data centers is crucial to improve <strong>availability</strong> and <strong>user experience</strong>
+when you have users spreading across geographical areas (internationally).</p>
+<p>Some considerations:</p>
+<ul>
+<li>Traffic redirection: Effective tools, such as GeoDNS to direct traffic to the correct data center.</li>
+<li>Data synchronization: There are 2 methods
+<ul>
+<li>Each region uses a distinct database: Limitation will lie in failover cases, where data are unavailable in another data center.</li>
+<li>Replicate data across data center (more common): See <a href="https://netflixtechblog.com/active-active-for-multi-regional-resiliency-c47719f6685b">this article</a> to know how Netflix implements asynchronous multi-data center replication.</li>
+</ul>
+</li>
+<li>Test and deployment: It is vital to test your app in different region as well as integrate CI/CD tools to deploy your services to multiple regions.</li>
+</ul>
+<h3 id="message-queue">Message queue</h3>
+<p>To allow each component of the system to scale independently,
+we need to decouple them into different servers (called services).
+Message queue is a tool enable these services communicate to each other.</p>
+<p>When we have a message queue, producers don&rsquo;t need to wait for acknowledgement
+from consumers to publish a message, thereby free them from being idle.</p>
+<h2 id="logging-metrics-automation">Logging, metrics, automation</h2>
+<ul>
+<li>Logging: useful for checking logs. You can aggregate logs from each service to a
+centralized storage for easy search and viewing (DataDog is an example).</li>
+<li>Metrics: Metric is use ful to check your service performance, and gain business insights.
+<ul>
+<li>Host level metrics: CPU, Memory, disk I/O, etc.</li>
+<li>Aggregated level metrics: for example, the performance of the entire database tier, cache tier, etc.</li>
+<li>Key business metrics: daily active users, retention, revenue, etc.</li>
+</ul>
+</li>
+<li>Automation: CI/CD is important to improve your team productivity.</li>
+</ul>
+<h2 id="iii-database-scaling">III. Database scaling</h2>
+<h3 id="nosql-vs-sql">NoSQL vs SQL</h3>
+<p>This is an excerpt from the book, non-relational databases might be the right choice if:</p>
+<ul>
+<li>Your application requires super-low latency.</li>
+<li>Your data are unstructured, or you do not have any relational data.</li>
+<li>You only need to serialize and deserialize data (JSON, XML, YAML, etc.).</li>
+<li>You need to store a massive amount of data.</li>
+</ul>
+<p>Here is <a href="http://highscalability.com/blog/2010/12/6/what-the-heck-are-you-actually-using-nosql-for.html">an article</a> that covers many use cases of NoSQL.</p>
+<p>Readers need to dig deeper into these database architectures to gain a better understanding
+of why it is the case.</p>
+<h3 id="vertical-scaling">Vertical scaling</h3>
+<p>Vertical scaling comes with some serious drawback</p>
+<ul>
+<li>Single point of failure.</li>
+<li>There are hardware limits.</li>
+<li>Cost is exorbitant.</li>
+</ul>
+<h3 id="horizontal-scaling">Horizontal scaling</h3>
+<p>Sharding is a strategy to distribute data to different database servers, which also distribute
+traffic, and thus providing an approach to scale database. Sharding is implemented by using a hash function,
+which hash based on user identity (such as ID), to determine which server will be used to populate the user&rsquo;s data.</p>
+<p>We aim to have a hash function so that it can distribute data evenly across servers.</p>
+<p>Sharding may be far more from perfect, as it introduces several problems:</p>
+<ol>
+<li><strong>Resharding data</strong>: Due to certain reasons, a shard may experience significant data growth, called shard exhaustion,
+which requires the need to use another hash function. Resharding requires you to move data around databases, which may be
+very complex. Commonly used technique is consistent hashing, which will be learned in Chapter 5.</li>
+<li><strong>Celebrity problem</strong>: A popular user, like Justin Bieber, may overload a server. Solving this problem might need to
+provide a shard for each celebrity.</li>
+<li><strong>Join and de-normalization</strong>: Joining is obviously complex if data is distributed across servers. De-normalization may be needed
+to allow query data without the need for joining.</li>
+</ol>
+<h2 id="iv-summary">IV. Summary</h2>
+<p>Scaling a system is an iterative process. More fine-tuning and new strategies are needed to scale beyond millions of users.
+For example, you might need to optimize your system and decouple the system to even smaller services.</p>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

@@ -7,8 +7,43 @@
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2020, Jane Doe.</copyright>
-    <lastBuildDate>Mon, 17 Feb 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 29 Mar 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/syntax/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>5. Cancellation and shutdown</title>
+      <link>http://localhost:1313/5.-cancellation-and-shutdown/</link>
+      <pubDate>Sat, 29 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/5.-cancellation-and-shutdown/</guid>
+      <description>&lt;h1 id=&#34;1-task-cancellation&#34;&gt;1. Task cancellation&lt;/h1&gt;&#xA;&lt;p&gt;An activity is cancellable if external code can move it to completion before its normal completion. There are several reasons you want&#xA;to cancel an activity:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;User clicked on the &lt;code&gt;cancel&lt;/code&gt; button in a GUI app.&lt;/li&gt;&#xA;&lt;li&gt;Search a problem space for a finite amount of time and choose the best solution.&lt;/li&gt;&#xA;&lt;li&gt;App events: Decompose a problem into multiple tasks, once a task finds the solution, other tasks are interrupted.&lt;/li&gt;&#xA;&lt;li&gt;&amp;hellip;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;There is no safe way to preemptively stop a thread in Java, and therefore no safe way to preemptively stop a task. There are only cooperative&#xA;mechanisms, in which the task requested to be interrupted must agree do so.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>1. Introduction to system scaling</title>
+      <link>http://localhost:1313/1.-introduction-to-system-scaling/</link>
+      <pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/1.-introduction-to-system-scaling/</guid>
+      <description>&lt;h1 id=&#34;chapter-1-scale-from-zero-to-millions-of-users&#34;&gt;Chapter 1: Scale from zero to millions of users&lt;/h1&gt;&#xA;&lt;h2 id=&#34;i-database-replication&#34;&gt;I. Database replication&lt;/h2&gt;&#xA;&lt;p&gt;Master-slave model offers several benefits&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Better performance: Parallel processing by multiple read nodes.&lt;/li&gt;&#xA;&lt;li&gt;Reliability: Data replication all over nodes.&lt;/li&gt;&#xA;&lt;li&gt;High availability:  if a database is offline as you can access data stored in another database server.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;In this model, when a master goes offline, a slave node will be selected and promoted to a new master.&#xA;In real life, this process can be challenging because the slave node might not have the up-to-date data.&#xA;Please refer to following materials if you want to understand techniques to solve this problem, which may be complex, &lt;a href=&#34;https://en.wikipedia.org/wiki/Multi-master_replication&#34;&gt;1&lt;/a&gt;,&#xA;&lt;a href=&#34;https://dev.mysql.com/doc/refman/5.7/en/mysql-cluster-replication-multi-master.html&#34;&gt;2&lt;/a&gt;.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>2. Back of the envelope estimation</title>
+      <link>http://localhost:1313/2.-back-of-the-envelope-estimation/</link>
+      <pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/2.-back-of-the-envelope-estimation/</guid>
+      <description>&lt;p&gt;Three basic concepts should be well understood to give the estimation of&#xA;your system capacity:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Power of two: Allow you to quickly calculate I/O and memory size, such as KB, MB, GB, TB,&amp;hellip;&lt;/li&gt;&#xA;&lt;li&gt;Latency numbers every programmer should know: This allows you to compare the latency between&#xA;systems.&lt;/li&gt;&#xA;&lt;li&gt;Availability numbers: How much downtime per day you guarantee with your customer in SLA (service level agreement)?&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;Commonly asked back-of-the-envelope estimations: QPS, peak QPS, storage, cache, number of servers, etc.&#xA;You can practice these calculations when preparing for an interview. Practice makes perfect.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>3. A framework for system design interviews</title>
+      <link>http://localhost:1313/3.-a-framework-for-system-design-interviews/</link>
+      <pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/3.-a-framework-for-system-design-interviews/</guid>
+      <description>&lt;h1 id=&#34;the-interview-framework&#34;&gt;The interview framework&lt;/h1&gt;&#xA;&lt;p&gt;This chapter gives insights about what you should do during the system design interview.&#xA;Four basic steps are:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Step 1 - Understand the problem and establish design scope: This is when you ask the interviewer questions about&#xA;the constraints of the system, or making assumption if needed. The goal is to understand the load of the system and the timeline&#xA;to shift the feature. Ask:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;What specific features are we going to build?&lt;/li&gt;&#xA;&lt;li&gt;How many users does the product have?&lt;/li&gt;&#xA;&lt;li&gt;How fast does the company anticipate to scale up? What are the anticipated scales in 3 months, 6 months, and a year?&lt;/li&gt;&#xA;&lt;li&gt;What is the company’s technology stack? What existing services you might leverage to simplify the design?&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Step 2 -  Propose high-level design and get buy-in: develop a high-level design and reach an agreement with the interviewer on the design.&#xA;Treat your interviewer as a teammate and work together during the process. Do back-of-the-envelope calculations (if necessary) and go through a few concrete use&#xA;cases to illustrate your design.&lt;/li&gt;&#xA;&lt;li&gt;Step 3 - Design deep dive: At this step, you and the interviewers should have already sketched out a high-level blueprint for the overall design, now&#xA;you shall work with the interviewer to identify and prioritize components in the architecture. Each interviewer may concern a different aspect, such as, bottleneck,&#xA;digging deeper in a specific component,&amp;hellip;&lt;/li&gt;&#xA;&lt;li&gt;Step 4 - Wrap up: You may be asked several follow-up questions before the interview ends, which may be:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Identify the system bottlenecks and discuss potential improvements.&lt;/li&gt;&#xA;&lt;li&gt;Recap the design (it is also helpful if you could actively to do this after a long session).&lt;/li&gt;&#xA;&lt;li&gt;Error cases (sever failure, network loss).&lt;/li&gt;&#xA;&lt;li&gt;Operation issues, such as how to monitor error logs, metrics, or roll out the system.&lt;/li&gt;&#xA;&lt;li&gt;How to handle the next scale curve, like 10 mil users.&lt;/li&gt;&#xA;&lt;li&gt;Propose other refinements you need if you had more time.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h1 id=&#34;time-allocation&#34;&gt;Time allocation&lt;/h1&gt;&#xA;&lt;p&gt;Time allocation is essential to not get yourself rambling on and on. Following is a raw estimation, the actual one&#xA;may depend on requirements and scopes.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>4. Design rate limiter</title>
+      <link>http://localhost:1313/4.-design-rate-limiter/</link>
+      <pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/4.-design-rate-limiter/</guid>
+      <description>&lt;p&gt;Benefits of rate limiter:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Prevent DDOS attack.&lt;/li&gt;&#xA;&lt;li&gt;Reduce cost: fewer servers, allocating resources for higher priority APIs,&#xA;fewer calls to third-party services which charge you per API call.&lt;/li&gt;&#xA;&lt;li&gt;Prevent servers from being overloaded: multiple requests may be from another crawling service, or&#xA;users&amp;rsquo; misbehavior.&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
     <item>
       <title>4. Task execution</title>
       <link>http://localhost:1313/4.-task-execution/</link>
