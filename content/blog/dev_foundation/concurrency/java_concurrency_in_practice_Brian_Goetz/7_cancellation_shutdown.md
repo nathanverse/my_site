@@ -326,3 +326,158 @@ public abstract class SocketUsingTask<T> implements CancellableTask<T> {
     }
 }
 ```
+
+# 2. Stopping a Thread-based service
+
+A service mush have responsibility to shut down its threads gratefully after being requested. 
+Thread ownership isn't transitive, for example, an application requests shutting down a service shouldn't intervene into interrupting 
+threads the service owns. Instead, the service should have the policy to stop its thread which is exposed through lifecycle methods so that
+the application can call.
+
+## 2.1. Logging service.
+
+We will go through a logging service to demonstrate how to terminate a service gratefully.
+
+Oftentimes, the logging can be done inline by the calling thread; however, there is the performance cost associated with this (which we
+will learn in chapter 11.6). Therefore, a common approach is to create a dedicated thread which pulls and logs messages from a queue put in 
+by different log producers, like following
+
+```java {linenos=table}
+public class LogWriter {
+    private final BlockingQueue<String> queue;
+    private final LoggerThread logger;
+
+    public LogWriter(Writer writer) {
+        this.queue = new LinkedBlockingQueue<String>(CAPACITY);
+        this.logger = new LoggerThread(writer);
+    }
+
+    public void start() {
+        logger.start();
+    }
+
+    public void log(String msg) throws InterruptedException {
+        queue.put(msg);
+    }
+
+    private class LoggerThread extends Thread {
+        private final PrintWriter writer;
+        ...
+
+        public void run() {
+            try {
+                while (true)
+                    writer.println(queue.take());
+            } catch (InterruptedException ignored) {
+            } finally {
+                writer.close();
+            }
+        }
+    }
+}
+```
+
+Canceling the logging service is easy enough by setting the interrupted flag, which will be acknowledged by the `queue.take()` blocking method.
+
+However, you may not want to do this because the messages stored haven't been drained yet. More importantly, producer threads may be blocked
+forever if the consumer was stopped while the `BlockingQueue` is full.
+
+An approach may be to stop producers from submitting messages while letting the consumer try to drain which have been put already. Like
+following:
+
+```java
+public void log(String msg) throws InterruptedException {
+    if (!shutdownRequested)
+        queue.put(msg);
+    else
+        throw new IllegalStateException("logger is shut down");
+}
+```
+
+However, the above approach may encounter the race condition issue, where the message can still be put after `shutdownRequested` is set.
+This may still cause the blocking issue if a number of producers which is equal to the size of the queue manage to put the message in and the consumer
+(depending on the implementation) may concern only drain existing messages.
+
+So... we are going to synchronize the code, but you won't want to put the `queue.put(msg)` in the synchronization block because it is 
+a blocking method. Alright, let think again, the idea is to make sure any message sent by a producer that see `shutDownRequested` 
+haven't turned on should be processed, so how about create an int var `reservations` that counts the number of messages the consumer
+should handle before the flag is turn off? This way we can ensure no thread will be blocked from making reservation for
+its messages when another the thread is waiting their turn to put its message into the queue that is currently full.
+
+Following is the implementation:
+
+```java {linenos=table}
+public class LogService {
+    private final BlockingQueue<String> queue;
+    private final LoggerThread loggerThread;
+    private final PrintWriter writer;
+    @GuardedBy("this") private boolean isShutdown;
+    @GuardedBy("this") private int reservations;
+    public void start() { loggerThread.start(); }
+    public void stop() {
+        synchronized (this) { isShutdown = true; }
+        loggerThread.interrupt();
+}
+    public void log(String msg) throws InterruptedException {
+        synchronized (this) {
+            if (isShutdown)
+                throw new IllegalStateException(...);
+            ++reservations;
+        }
+        queue.put(msg);
+    }
+    private class LoggerThread extends Thread {
+        public void run() {
+            try {
+                while (true) {
+                    try {
+                        synchronized (this) {
+                            if (isShutdown && reservations == 0)
+                                break;
+                        }
+                        String msg = queue.take();
+                        synchronized (this) {
+                            --reservations;
+                        }
+                        writer.println(msg);
+                    } catch (InterruptedException e) { /*  retry  */ }
+                }
+            } finally {
+                writer.close();
+
+            }
+        }
+    }
+}
+```
+
+## 2.2. `ExecutorService` shutdown.
+`ExecutorService` provides `shutdown()` to shut down its workers gracefully and `shutdownNow()` to shut abruptly. It is obvious that
+abrupt shutting is risky as the task is amid processed.
+
+Developing a cancelable service can be easy by leverage `ExecutorService` to shut down threads, like another `LogService` implementation:
+```java {linenos=table}
+public class LogService {
+    private final ExecutorService exec = newSingleThreadExecutor();
+    ...
+    public void start() { }
+    public void stop() throws InterruptedException {
+        try {
+            exec.shutdown();
+            exec.awaitTermination(TIMEOUT, UNIT);
+        } finally {
+            writer.close();
+        }
+    }
+    public void log(String msg) {
+        try {
+            exec.execute(new WriteTask(msg));
+        } catch (RejectedExecutionException ignored) { }
+    }
+}
+```
+
+## 2.3. Poison Pills shutdown
+
+Shutting down signal can be represented by the message itself, which the process when receiving them can start to terminate its thread.
+Such message is called poison pills.
