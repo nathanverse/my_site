@@ -557,7 +557,7 @@ public void run() {
 JVM also supports to notice `UncaughtExceptionHandler` whenever a thread exits due to an uncaught exception. If no handler exists, the default
 behavior is to print the stack trace to `System.err`. 
 
-You should at least leverage both above approaches to print error messages and the stack trace to the application log. If you need to perform some 
+You should at least leverage both one of these approaches to print error messages and the stack trace to the application log. If you need to perform some 
 task-specific recovery actions such as rolling up the thread again, these techniques are also ideal.
 
 # 4. JVM shutdown

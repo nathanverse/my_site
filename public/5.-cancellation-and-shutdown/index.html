@@ -53,7 +53,7 @@ User clicked on the cancel button in a GUI app. Search a problem space for a fin
 User clicked on the cancel button in a GUI app. Search a problem space for a finite amount of time and choose the best solution. App events: Decompose a problem into multiple tasks, once a task finds the solution, other tasks are interrupted. … There is no safe way to preemptively stop a thread in Java, and therefore no safe way to preemptively stop a task. There are only cooperative mechanisms, in which the task requested to be interrupted must agree do so.">
   <meta itemprop="datePublished" content="2025-03-29T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-29T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1965">
+  <meta itemprop="wordCount" content="3875">
   <meta itemprop="image" content="http://localhost:1313/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -274,9 +274,9 @@ to cancel an activity:</p>
 mechanisms, in which the task requested to be interrupted must agree do so.</p>
 <p>Cancellation policy of a task involves, <em>how</em>, <em>when</em>, <em>what</em>:</p>
 <ul>
-<li>How other code can request cancellation.</li>
-<li>When the task checks whether cancellation has been requested.</li>
-<li>What actions the task takes in response to a cancellation request.</li>
+<li>How other code can request cancellation?</li>
+<li>When the task checks whether cancellation has been requested?</li>
+<li>What actions the task takes in response to a cancellation request?</li>
 </ul>
 <p>Considering following codes:</p>
 
@@ -749,7 +749,359 @@ implementation</p>
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></td></tr></table>
 </div>
+</div><h1 id="2-stopping-a-thread-based-service">2. Stopping a Thread-based service</h1>
+<p>A service mush have responsibility to shut down its threads gratefully after being requested.
+Thread ownership isn&rsquo;t transitive, for example, an application requests shutting down a service shouldn&rsquo;t intervene into interrupting
+threads the service owns. Instead, the service should have the policy to stop its thread which is exposed through lifecycle methods so that
+the application can call.</p>
+<h2 id="21-logging-service">2.1. Logging service.</h2>
+<p>We will go through a logging service to demonstrate how to terminate a service gratefully.</p>
+<p>Oftentimes, the logging can be done inline by the calling thread; however, there is the performance cost associated with this (which we
+will learn in chapter 11.6). Therefore, a common approach is to create a dedicated thread which pulls and logs messages from a queue put in
+by different log producers, like following</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LogWriter</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> BlockingQueue<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> queue;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> LoggerThread logger;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">LogWriter</span>(Writer writer) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">queue</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> LinkedBlockingQueue<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span>(CAPACITY);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">logger</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> LoggerThread(writer);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">start</span>() {
+</span></span><span style="display:flex;"><span>        logger.<span style="color:#a6e22e">start</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">log</span>(String msg) <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>        queue.<span style="color:#a6e22e">put</span>(msg);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LoggerThread</span> <span style="color:#66d9ef">extends</span> Thread {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> PrintWriter writer;
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>)
+</span></span><span style="display:flex;"><span>                    writer.<span style="color:#a6e22e">println</span>(queue.<span style="color:#a6e22e">take</span>());
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">catch</span> (InterruptedException ignored) {
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                writer.<span style="color:#a6e22e">close</span>();
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
 </div>
+</div><p>Canceling the logging service is easy enough by setting the interrupted flag, which will be acknowledged by the <code>queue.take()</code> blocking method.</p>
+<p>However, you may not want to do this because the messages stored haven&rsquo;t been drained yet. More importantly, producer threads may be blocked
+forever if the consumer was stopped while the <code>BlockingQueue</code> is full.</p>
+<p>An approach may be to stop producers from submitting messages while letting the consumer try to drain which have been put already. Like
+following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">log</span>(String msg) <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>shutdownRequested)
+</span></span><span style="display:flex;"><span>        queue.<span style="color:#a6e22e">put</span>(msg);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalStateException(<span style="color:#e6db74">&#34;logger is shut down&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>However, the above approach may encounter the race condition issue, where the message can still be put after <code>shutdownRequested</code> is set.
+This may still cause the blocking issue if a number of producers which is equal to the size of the queue manage to put the message in and the consumer
+(depending on the implementation) may concern only drain existing messages.</p>
+<p>So&hellip; we are going to synchronize the code, but you won&rsquo;t want to put the <code>queue.put(msg)</code> in the synchronization block because it is
+a blocking method. Alright, let think again, the idea is to make sure any message sent by a producer that see <code>shutDownRequested</code>
+haven&rsquo;t turned on should be processed, so how about create an int var <code>reservations</code> that counts the number of messages the consumer
+should handle before the flag is turn off? This way we can ensure no thread will be blocked from making reservation for
+its messages when another the thread is waiting their turn to put its message into the queue that is currently full.</p>
+<p>Following is the implementation:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LogService</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> BlockingQueue<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> queue;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> LoggerThread loggerThread;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> PrintWriter writer;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">boolean</span> isShutdown;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> reservations;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">start</span>() { loggerThread.<span style="color:#a6e22e">start</span>(); }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">stop</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>) { isShutdown <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>; }
+</span></span><span style="display:flex;"><span>        loggerThread.<span style="color:#a6e22e">interrupt</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">log</span>(String msg) <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (isShutdown)
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalStateException(...);
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">++</span>reservations;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        queue.<span style="color:#a6e22e">put</span>(msg);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LoggerThread</span> <span style="color:#66d9ef">extends</span> Thread {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>) {
+</span></span><span style="display:flex;"><span>                            <span style="color:#66d9ef">if</span> (isShutdown <span style="color:#f92672">&amp;&amp;</span> reservations <span style="color:#f92672">==</span> 0)
+</span></span><span style="display:flex;"><span>                                <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>                        }
+</span></span><span style="display:flex;"><span>                        String msg <span style="color:#f92672">=</span> queue.<span style="color:#a6e22e">take</span>();
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>) {
+</span></span><span style="display:flex;"><span>                            <span style="color:#f92672">--</span>reservations;
+</span></span><span style="display:flex;"><span>                        }
+</span></span><span style="display:flex;"><span>                        writer.<span style="color:#a6e22e">println</span>(msg);
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">catch</span> (InterruptedException e) { <span style="color:#75715e">/*  retry  */</span> }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                writer.<span style="color:#a6e22e">close</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="22-executorservice-shutdown">2.2. <code>ExecutorService</code> shutdown.</h2>
+<p><code>ExecutorService</code> provides <code>shutdown()</code> to shut down its workers gracefully and <code>shutdownNow()</code> to shut abruptly. It is obvious that
+abrupt shutting is risky as the task is amid processed.</p>
+<p>Developing a cancelable service can be easy by leverage <code>ExecutorService</code> to shut down threads, like another <code>LogService</code> implementation:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LogService</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> ExecutorService exec <span style="color:#f92672">=</span> newSingleThreadExecutor();
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">start</span>() { }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">stop</span>() <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            exec.<span style="color:#a6e22e">shutdown</span>();
+</span></span><span style="display:flex;"><span>            exec.<span style="color:#a6e22e">awaitTermination</span>(TIMEOUT, UNIT);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>            writer.<span style="color:#a6e22e">close</span>();
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">log</span>(String msg) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            exec.<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> WriteTask(msg));
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (RejectedExecutionException ignored) { }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="23-poison-pills-shutdown">2.3. Poison Pills shutdown</h2>
+<p>Shutting down signal can be represented by messages itself, which the consumer when receiving them can start to terminate its thread.
+Such message is called poison pills.</p>
+<p>This approach works when we know the number of producers and consumers. If there are <code>n</code> consumers, we put in $n_{consumer}$ poison pills messages.
+Each consumer receiving the pill will stop taking more tasks.  If there are <code>m</code> producers, the final consumer only stops, if  $m_{producer}$
+are put in.</p>
+<h2 id="24-shutdown-and-shutdownnow-concerns">2.4. <code>shutDown</code> and <code>shutDownNow</code> concerns</h2>
+<p>Typically, after shutting down, services are implemented to finish all tasks they are given before they terminate. <code>Executor</code> offers
+several methods for you to this, such as <code>awaitTermination()</code> which waits for all tasks to complete before continue. You may
+want to call this method on <code>Executor</code> after you call <code>shutdown()</code>.</p>
+<p>On the other hand, <code>shutDownNow()</code> will trigger interruption on all tasks even they are executing and return the list of tasks
+that are haven&rsquo;t been executed. In some cases, you may want to know tasks that are executed but get interrupted half way too.
+For example, like a <code>WebCrawler</code> which is likely require to craw the ole urls that it hasn&rsquo;t fully crawl yet.</p>
+<p>To address this, you can rely on the interrupted flag of the <code>Thread</code> that is executing tasks, as following code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TrackingExecutor</span> <span style="color:#66d9ef">extends</span> AbstractExecutorService {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> ExecutorService exec;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Set<span style="color:#f92672">&lt;</span>Runnable<span style="color:#f92672">&gt;</span> tasksCancelledAtShutdown <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>        Collections.<span style="color:#a6e22e">synchronizedSet</span>(<span style="color:#66d9ef">new</span> HashSet<span style="color:#f92672">&lt;</span>Runnable<span style="color:#f92672">&gt;</span>());
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> List<span style="color:#f92672">&lt;</span>Runnable<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">getCancelledTasks</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>exec.<span style="color:#a6e22e">isTerminated</span>())
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalStateException(...);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;</span>Runnable<span style="color:#f92672">&gt;</span>(tasksCancelledAtShutdown);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">final</span> Runnable runnable) {
+</span></span><span style="display:flex;"><span>        exec.<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                    runnable.<span style="color:#a6e22e">run</span>();
+</span></span><span style="display:flex;"><span>                } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> (isShutdown()
+</span></span><span style="display:flex;"><span>                            <span style="color:#f92672">&amp;&amp;</span> Thread.<span style="color:#a6e22e">currentThread</span>().<span style="color:#a6e22e">isInterrupted</span>())
+</span></span><span style="display:flex;"><span>                        tasksCancelledAtShutdown.<span style="color:#a6e22e">add</span>(runnable);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// delegate other ExecutorService methods to exec</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>TrackingExecutor</code> is an extension of <code>ExecutorService</code>. To store interrupted tasks, it wraps the <code>Runnable</code> in try, catch block
+and try to check if the thread interrupted flag through <code>Thread.currentThread().isInterrupted()</code>. It should be noticed that
+race condition may happen at this checking condition. If a task has just completed but is interrupted right after, the task
+may be added in the queue again. Therefore, it is important to implement tasks as idempotent when using this technique.</p>
+<h1 id="3-handling-abnormal-thread-termination">3. Handling abnormal thread termination.</h1>
+<p>Thread leakage occurs when a thread experiences an issue but goes unnoticed (though stacking trace is often printed, no one might
+be watching the console).</p>
+<p>Thread leakage consequences can range from benign to disastrous. Losing a thread in thread pool may be not as problematic
+as losing the main UI thread which is responsible to update states on user interface, which if leaked the screen would freeze.</p>
+<p>Hench, detecting and preventing thread leakage is very important. One simple approach is to always notice your framework through
+<code>finally</code> statement of the try catch block before the thread exits.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>    Throwable thrown <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span> (<span style="color:#f92672">!</span>isInterrupted())
+</span></span><span style="display:flex;"><span>            runTask(getTaskFromWorkQueue());
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (Throwable e) {
+</span></span><span style="display:flex;"><span>        thrown <span style="color:#f92672">=</span> e;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>        threadExited(<span style="color:#66d9ef">this</span>, thrown);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>JVM also supports to notice <code>UncaughtExceptionHandler</code> whenever a thread exits due to an uncaught exception. If no handler exists, the default
+behavior is to print the stack trace to <code>System.err</code>.</p>
+<p>You should at least leverage both one of these approaches to print error messages and the stack trace to the application log. If you need to perform some
+task-specific recovery actions such as rolling up the thread again, these techniques are also ideal.</p>
+<h1 id="4-jvm-shutdown">4. JVM shutdown</h1>
+<p>JVM can be shutdown through either an orderly or abrupt manner.</p>
+<p>Orderly ways typically are:</p>
+<ul>
+<li>All non-daemon threads terminate.</li>
+<li>Someone call <code>System.exit</code>.</li>
+<li>Sending <code>SIGNINT</code> or hitting <code>Ctl-C</code>.</li>
+</ul>
+<p>Meanwhile, abrupt shutdown can be triggered through <code>Runtime.halt</code> or by killing the JVM process through the operating system (sending
+<code>SIGNKILL</code>).</p>
+<h2 id="41-shutdown-hooks">4.1. Shutdown hooks</h2>
+<p>In an orderly shutdown:</p>
+<ol>
+<li>JVM starts all registered shutdown hooks, which are unstarted threads that are registered through <code>Runtim.addShutdownHook</code></li>
+<li>If application threads are still running at this time, they continue to run with shutdown process.</li>
+<li>When hooks are completed, JVM might choose to run finalizers if <code>runFinalizersOnExit</code> is true and then halts.</li>
+<li>After halting, application threads will be abruptly terminated.</li>
+</ol>
+<p>If the hook takes too long to complete, the orderly shutdown process hangs and the JVM must be shut down abruptly.</p>
+<p>In an abrupt shutdown, the JVM is not required to do anything other than halt the JVM; shutdown hooks will not run.</p>
+<p>You can use these hooks to do service or application cleanup, such as deleting temporary files or cleaning up resources that are not
+automatically cleaned up by the OS.</p>
+<p>These hooks have some compliance you should preserve:</p>
+<ol>
+<li>Because hooks will be executed concurrently, and they are possibly access to a shared state. They must be synchronized.</li>
+<li>They should not make assumptions about the state of the application (such as whether other services have shut down already
+or all normal threads have completed) or about why the JVM is shutting down, and must therefore be coded extremely defensively.</li>
+<li>They should exit as quickly as possible, since their existence delays JVM termination.</li>
+</ol>
+<p>One hook can depend on the resource that is closed by another hook. Therefore, you should implement in the way to not make hooks
+become independent, otherwise you need to synchronize these steps. One way to accomplish this is to use a single shutdown hook for all services, rather than one for each service, and have it
+call a series of shutdown actions.</p>
+<h2 id="42-daemon-threads">4.2. Daemon threads</h2>
+<p>If you need a thread to perform the &ldquo;housekeeping tasks&rdquo;, such as periodically removing expired entries from an in-memory cache, and
+the abrupt termination of it will not lead to any resource leakage, like let the file or socket open while performing I/O tasks, then
+daemon threads can be your choice.</p>
+<p>Whenever the thread exits, the JVM checks if the app now only contains daemon threads without any normal threads being executing, it
+triggers the orderly shut down process. Daemon threads will be abandoned (finally blocks are not executed, for example), after the JVM
+triggers a halt.</p>
+<h2 id="43-finalizers">4.3. Finalizers</h2>
+<p>Finalizers are convenient method on each class that will be called by JVM when the class is reclaimed by the collector. Finalizers
+are designed to help release resources of the class such as file or socket handles.</p>
+<p>However, you should avoid to use finalizers due to their uncertain and complex nature, like:</p>
+<ol>
+<li>You need to ensure synchronization between JVM threads.</li>
+<li>JVM has no guarantee about when or even if finalizers will be run.</li>
+<li>They are notoriously said to impose a significant performance cost.</li>
+<li>They are challenging to write</li>
+</ol>
+<p>In most cases, it is better to use <code>finally</code> blocks with explicit <code>close</code> methods.</p>
+<p>We mention it because it may be needed in some cases such as when you need to manage objects that hold resources acquired by native methods.</p>
+
 </content>
 <p>
   
