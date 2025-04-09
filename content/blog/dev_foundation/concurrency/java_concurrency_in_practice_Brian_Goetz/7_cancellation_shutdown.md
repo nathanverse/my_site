@@ -479,5 +479,141 @@ public class LogService {
 
 ## 2.3. Poison Pills shutdown
 
-Shutting down signal can be represented by the message itself, which the process when receiving them can start to terminate its thread.
+Shutting down signal can be represented by messages itself, which the consumer when receiving them can start to terminate its thread.
 Such message is called poison pills.
+
+This approach works when we know the number of producers and consumers. If there are `n` consumers, we put in $n_{consumer}$ poison pills messages.
+Each consumer receiving the pill will stop taking more tasks.  If there are `m` producers, the final consumer only stops, if  $m_{producer}$
+are put in.
+
+## 2.4. `shutDown` and `shutDownNow` concerns
+
+Typically, after shutting down, services are implemented to finish all tasks they are given before they terminate. `Executor` offers
+several methods for you to this, such as `awaitTermination()` which waits for all tasks to complete before continue. You may
+want to call this method on `Executor` after you call `shutdown()`.
+
+On the other hand, `shutDownNow()` will trigger interruption on all tasks even they are executing and return the list of tasks
+that are haven't been executed. In some cases, you may want to know tasks that are executed but get interrupted half way too.
+For example, like a `WebCrawler` which is likely require to craw the ole urls that it hasn't fully crawl yet.
+
+To address this, you can rely on the interrupted flag of the `Thread` that is executing tasks, as following code:
+```java
+public class TrackingExecutor extends AbstractExecutorService {
+    private final ExecutorService exec;
+    private final Set<Runnable> tasksCancelledAtShutdown =
+        Collections.synchronizedSet(new HashSet<Runnable>());
+    public List<Runnable> getCancelledTasks() {
+        if (!exec.isTerminated())
+            throw new IllegalStateException(...);
+        return new ArrayList<Runnable>(tasksCancelledAtShutdown);
+    }
+
+    public void execute(final Runnable runnable) {
+        exec.execute(new Runnable() {
+            public void run() {
+                try {
+                    runnable.run();
+                } finally {
+                    if (isShutdown()
+                            && Thread.currentThread().isInterrupted())
+                        tasksCancelledAtShutdown.add(runnable);
+                }
+            }
+        });
+    }
+    // delegate other ExecutorService methods to exec
+}
+```
+
+`TrackingExecutor` is an extension of `ExecutorService`. To store interrupted tasks, it wraps the `Runnable` in try, catch block
+and try to check if the thread interrupted flag through `Thread.currentThread().isInterrupted()`. It should be noticed that
+race condition may happen at this checking condition. If a task has just completed but is interrupted right after, the task
+may be added in the queue again. Therefore, it is important to implement tasks as idempotent when using this technique.
+
+# 3. Handling abnormal thread termination.
+Thread leakage occurs when a thread experiences an issue but goes unnoticed (though stacking trace is often printed, no one might
+be watching the console). 
+
+Thread leakage consequences can range from benign to disastrous. Losing a thread in thread pool may be not as problematic 
+as losing the main UI thread which is responsible to update states on user interface, which if leaked the screen would freeze.
+
+Hench, detecting and preventing thread leakage is very important. One simple approach is to always notice your framework through
+`finally` statement of the try catch block before the thread exits.
+
+```java
+public void run() {
+    Throwable thrown = null;
+    try {
+        while (!isInterrupted())
+            runTask(getTaskFromWorkQueue());
+    } catch (Throwable e) {
+        thrown = e;
+    } finally {
+        threadExited(this, thrown);
+    }
+}
+```
+
+JVM also supports to notice `UncaughtExceptionHandler` whenever a thread exits due to an uncaught exception. If no handler exists, the default
+behavior is to print the stack trace to `System.err`. 
+
+You should at least leverage both above approaches to print error messages and the stack trace to the application log. If you need to perform some 
+task-specific recovery actions such as rolling up the thread again, these techniques are also ideal.
+
+# 4. JVM shutdown
+JVM can be shutdown through either an orderly or abrupt manner. 
+
+Orderly ways typically are:
++ All non-daemon threads terminate.
++ Someone call `System.exit`.
++ Sending `SIGNINT` or hitting `Ctl-C`.
+
+Meanwhile, abrupt shutdown can be triggered through `Runtime.halt` or by killing the JVM process through the operating system (sending
+`SIGNKILL`).
+
+## 4.1. Shutdown hooks
+In an orderly shutdown:
+1. JVM starts all registered shutdown hooks, which are unstarted threads that are registered through `Runtim.addShutdownHook`
+2. If application threads are still running at this time, they continue to run with shutdown process.
+3. When hooks are completed, JVM might choose to run finalizers if `runFinalizersOnExit` is true and then halts.
+4. After halting, application threads will be abruptly terminated.
+
+If the hook takes too long to complete, the orderly shutdown process hangs and the JVM must be shut down abruptly.
+
+In an abrupt shutdown, the JVM is not required to do anything other than halt the JVM; shutdown hooks will not run.
+
+You can use these hooks to do service or application cleanup, such as deleting temporary files or cleaning up resources that are not 
+automatically cleaned up by the OS.
+
+These hooks have some compliance you should preserve:
+1. Because hooks will be executed concurrently, and they are possibly access to a shared state. They must be synchronized.
+2. They should not make assumptions about the state of the application (such as whether other services have shut down already
+or all normal threads have completed) or about why the JVM is shutting down, and must therefore be coded extremely defensively.
+3. They should exit as quickly as possible, since their existence delays JVM termination.
+
+One hook can depend on the resource that is closed by another hook. Therefore, you should implement in the way to not make hooks
+become independent, otherwise you need to synchronize these steps. One way to accomplish this is to use a single shutdown hook for all services, rather than one for each service, and have it 
+call a series of shutdown actions.
+
+## 4.2. Daemon threads
+If you need a thread to perform the "housekeeping tasks", such as periodically removing expired entries from an in-memory cache, and
+the abrupt termination of it will not lead to any resource leakage, like let the file or socket open while performing I/O tasks, then
+daemon threads can be your choice.
+
+Whenever the thread exits, the JVM checks if the app now only contains daemon threads without any normal threads being executing, it 
+triggers the orderly shut down process. Daemon threads will be abandoned (finally blocks are not executed, for example), after the JVM
+triggers a halt.
+
+## 4.3. Finalizers
+Finalizers are convenient method on each class that will be called by JVM when the class is reclaimed by the collector. Finalizers 
+are designed to help release resources of the class such as file or socket handles.
+
+However, you should avoid to use finalizers due to their uncertain and complex nature, like:
+1. You need to ensure synchronization between JVM threads.
+2. JVM has no guarantee about when or even if finalizers will be run.
+3. They are notoriously said to impose a significant performance cost.
+4. They are challenging to write
+
+In most cases, it is better to use `finally` blocks with explicit `close` methods.
+
+We mention it because it may be needed in some cases such as when you need to manage objects that hold resources acquired by native methods.
