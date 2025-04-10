@@ -5,8 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="feat: add 2.1, 2.2 in blog 5">
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/5_consistent_hashing.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/6_key_value_storage.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/img.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/cap.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/complete_ring.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/map_key_ring.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/ring.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/servers_on_ring.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/virtual_node_ring.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/7_cancellation_shutdown.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/7_cancellation_shutdown.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/5.-cancellation-and-shutdown/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/5.-cancellation-and-shutdown/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
