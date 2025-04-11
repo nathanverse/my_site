@@ -7,8 +7,15 @@
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2020, Jane Doe.</copyright>
-    <lastBuildDate>Fri, 28 Mar 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 10 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/dev_foundation/system_design/alexu_sdi_vol_1/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>5. Consistent hashing</title>
+      <link>http://localhost:1313/5.-consistent-hashing/</link>
+      <pubDate>Thu, 10 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/5.-consistent-hashing/</guid>
+      <description>&lt;p&gt;To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers.&#xA;Consistent hashing is a commonly used technique to achieve this goal.&lt;/p&gt;&#xA;&lt;h2 id=&#34;1-the-rehashing-problem&#34;&gt;1. The rehashing problem&lt;/h2&gt;&#xA;&lt;p&gt;Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down,&#xA;you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>1. Introduction to system scaling</title>
       <link>http://localhost:1313/1.-introduction-to-system-scaling/</link>
@@ -36,6 +43,13 @@
       <pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/4.-design-rate-limiter/</guid>
       <description>&lt;p&gt;Benefits of rate limiter:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Prevent DDOS attack.&lt;/li&gt;&#xA;&lt;li&gt;Reduce cost: fewer servers, allocating resources for higher priority APIs,&#xA;fewer calls to third-party services which charge you per API call.&lt;/li&gt;&#xA;&lt;li&gt;Prevent servers from being overloaded: multiple requests may be from another crawling service, or&#xA;users&amp;rsquo; misbehavior.&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title>5. Design a key-value store</title>
+      <link>http://localhost:1313/5.-design-a-key-value-store/</link>
+      <pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/5.-design-a-key-value-store/</guid>
+      <description>&lt;p&gt;A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.&lt;/p&gt;&#xA;&lt;p&gt;The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.&lt;/p&gt;&#xA;&lt;p&gt;The value can be any types. It is treated as opaque object in key-value stores.&lt;/p&gt;&#xA;&lt;p&gt;In this article, we will try to design:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The size of a key-value pair is small: less than 10 KB.&lt;/li&gt;&#xA;&lt;li&gt;Ability to store big data.&lt;/li&gt;&#xA;&lt;li&gt;High availability: The system responds quickly, even during failures.&lt;/li&gt;&#xA;&lt;li&gt;High scalability: The system can be scaled to support large data set.&lt;/li&gt;&#xA;&lt;li&gt;Automatic scaling: The addition/deletion of servers should be automatic based on traffic.&lt;/li&gt;&#xA;&lt;li&gt;Tunable consistency.&lt;/li&gt;&#xA;&lt;li&gt;Low latency.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h1 id=&#34;single-server-key-value-store&#34;&gt;Single server key-value store&lt;/h1&gt;&#xA;&lt;p&gt;Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

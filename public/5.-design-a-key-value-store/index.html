@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>5. Design a key-value store | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="5. Design a key-value store" />
+<meta name="description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
+The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.
+The value can be any types. It is treated as opaque object in key-value stores.
+In this article, we will try to design:
+
+The size of a key-value pair is small: less than 10 KB.
+Ability to store big data.
+High availability: The system responds quickly, even during failures.
+High scalability: The system can be scaled to support large data set.
+Automatic scaling: The addition/deletion of servers should be automatic based on traffic.
+Tunable consistency.
+Low latency.
+
+Single server key-value store
+Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:" />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/5.-design-a-key-value-store/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="5. Design a key-value store">
+  <meta property="og:description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
+The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.
+The value can be any types. It is treated as opaque object in key-value stores.
+In this article, we will try to design:
+The size of a key-value pair is small: less than 10 KB. Ability to store big data. High availability: The system responds quickly, even during failures. High scalability: The system can be scaled to support large data set. Automatic scaling: The addition/deletion of servers should be automatic based on traffic. Tunable consistency. Low latency. Single server key-value store Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-03-28T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-03-28T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="5. Design a key-value store">
+  <meta name="twitter:description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
+The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.
+The value can be any types. It is treated as opaque object in key-value stores.
+In this article, we will try to design:
+The size of a key-value pair is small: less than 10 KB. Ability to store big data. High availability: The system responds quickly, even during failures. High scalability: The system can be scaled to support large data set. Automatic scaling: The addition/deletion of servers should be automatic based on traffic. Tunable consistency. Low latency. Single server key-value store Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:">
+
+
+
+
+  <meta itemprop="name" content="5. Design a key-value store">
+  <meta itemprop="description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
+The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.
+The value can be any types. It is treated as opaque object in key-value stores.
+In this article, we will try to design:
+The size of a key-value pair is small: less than 10 KB. Ability to store big data. High availability: The system responds quickly, even during failures. High scalability: The system can be scaled to support large data set. Automatic scaling: The addition/deletion of servers should be automatic based on traffic. Tunable consistency. Low latency. Single server key-value store Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:">
+  <meta itemprop="datePublished" content="2025-03-28T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-03-28T00:00:00+00:00">
+  <meta itemprop="wordCount" content="400">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>5. Design a key-value store</h1>
+<p>
+  <i>
+    <time datetime='2025-03-28' pubdate>
+      28 Mar, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.</p>
+<p>The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.</p>
+<p>The value can be any types. It is treated as opaque object in key-value stores.</p>
+<p>In this article, we will try to design:</p>
+<ul>
+<li>The size of a key-value pair is small: less than 10 KB.</li>
+<li>Ability to store big data.</li>
+<li>High availability: The system responds quickly, even during failures.</li>
+<li>High scalability: The system can be scaled to support large data set.</li>
+<li>Automatic scaling: The addition/deletion of servers should be automatic based on traffic.</li>
+<li>Tunable consistency.</li>
+<li>Low latency.</li>
+</ul>
+<h1 id="single-server-key-value-store">Single server key-value store</h1>
+<p>Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:</p>
+<ol>
+<li>Compressing data.</li>
+<li>Store only frequently used data in memory and the rest on disk.</li>
+</ol>
+<p>But it is still not enough to handle big data access.</p>
+<h1 id="distributed-key-value-store">Distributed key-value store.</h1>
+<h2 id="cap-theorem">CAP theorem</h2>
+<p>CAP theorem states it is impossible for a distributed system to simultaneously provide more than two of these three
+guarantees: consistency, availability, and partition tolerance.</p>
+<ul>
+<li><em>Consistency</em>: all users see the same data at the same time no matter what node they connect to.</li>
+<li><em>Availability</em>: any client requests data should get a response even if some of the nodes are down.</li>
+<li><em>Partition Tolerance</em>: the system continues to operate despite the system is partitioned due to network failures.</li>
+</ul>
+<p>Because in the real work, network failures always occur, thus the system that sacrifice this characteristic is impossible. Therefore, you
+must either choose only consistency and availability.</p>
+<p>For example, the following img illustrates the system with 3 nodes, and one node <code>n3</code> is going down.</p>
+<p><img src="/cao.png" alt="img"></p>
+<p>In this case, if you choose consistency (like financial system which emphasizes the importance of seeing latest balance). When latest
+balance is written to <code>n3</code> but fails to propagate to other nodes before terminating, we can&rsquo;t write and read in other nodes, thereby
+informing the service downtime and sacrificing availability.</p>
+<p>On the other hand, to preserve availability, <code>n1</code> and <code>n2</code> allows read and write operations to be executed despite the possibility of
+returning stale or incorrect data. Writing operations would be reconciled later to achieve the correct state of the system.</p>
+<p>You should discuss with the interviewer about what characteristic you should preserve.</p>
+<h2 id="system-components">System components</h2>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

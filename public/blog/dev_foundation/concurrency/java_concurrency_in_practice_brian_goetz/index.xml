@@ -7,12 +7,12 @@
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2020, Jane Doe.</copyright>
-    <lastBuildDate>Sat, 29 Mar 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 07 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>5. Cancellation and shutdown</title>
       <link>http://localhost:1313/5.-cancellation-and-shutdown/</link>
-      <pubDate>Sat, 29 Mar 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 07 Apr 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/5.-cancellation-and-shutdown/</guid>
       <description>&lt;h1 id=&#34;1-task-cancellation&#34;&gt;1. Task cancellation&lt;/h1&gt;&#xA;&lt;p&gt;An activity is cancellable if external code can move it to completion before its normal completion. There are several reasons you want&#xA;to cancel an activity:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;User clicked on the &lt;code&gt;cancel&lt;/code&gt; button in a GUI app.&lt;/li&gt;&#xA;&lt;li&gt;Search a problem space for a finite amount of time and choose the best solution.&lt;/li&gt;&#xA;&lt;li&gt;App events: Decompose a problem into multiple tasks, once a task finds the solution, other tasks are interrupted.&lt;/li&gt;&#xA;&lt;li&gt;&amp;hellip;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;There is no safe way to preemptively stop a thread in Java, and therefore no safe way to preemptively stop a task. There are only cooperative&#xA;mechanisms, in which the task requested to be interrupted must agree do so.&lt;/p&gt;</description>
     </item>

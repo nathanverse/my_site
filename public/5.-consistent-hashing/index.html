@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>5. Consistent hashing | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="5. Consistent hashing" />
+<meta name="description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers.
+Consistent hashing is a commonly used technique to achieve this goal.
+1. The rehashing problem
+Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down,
+you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/5.-consistent-hashing/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="5. Consistent hashing">
+  <meta property="og:description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers. Consistent hashing is a commonly used technique to achieve this goal.
+1. The rehashing problem Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down, you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-04-10T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-04-10T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="5. Consistent hashing">
+  <meta name="twitter:description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers. Consistent hashing is a commonly used technique to achieve this goal.
+1. The rehashing problem Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down, you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.">
+
+
+
+
+  <meta itemprop="name" content="5. Consistent hashing">
+  <meta itemprop="description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers. Consistent hashing is a commonly used technique to achieve this goal.
+1. The rehashing problem Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down, you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.">
+  <meta itemprop="datePublished" content="2025-04-10T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-10T00:00:00+00:00">
+  <meta itemprop="wordCount" content="491">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>5. Consistent hashing</h1>
+<p>
+  <i>
+    <time datetime='2025-04-10' pubdate>
+      10 Apr, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers.
+Consistent hashing is a commonly used technique to achieve this goal.</p>
+<h2 id="1-the-rehashing-problem">1. The rehashing problem</h2>
+<p>Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down,
+you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.</p>
+<p>The rest of the talk will discuss on the context that the hashing function is used on key-value store, in which moving large amount
+of data can result in the storm of cache misses.</p>
+<h2 id="2-consistent-hashing">2. Consistent hashing</h2>
+<p>Consistent hashing is designed so that when a node is down, only <code>k</code> / <code>n</code> amount of keys is redistributed, with k is the number of keys the system is storing, and <code>n</code> is
+the number of current services. This is done by using a concept of ring.</p>
+<p>Suppose that we have a hash function that when input with a key will produce a number from <code>x_0</code>, <code>x_1</code>, &hellip; to <code>x_n</code>. These values are distributed
+evenly on following ring.</p>
+<p><img src="/ring.png" alt="img"></p>
+<p>Using the hash function, we can map servers based on server IP or name onto the ring.</p>
+<p><img src="/servers_on_ring.png" alt="img"></p>
+<p>Keys are also input to produce values placed on these rings.</p>
+<p><img src="/complete_ring.png" alt="img"></p>
+<p>To determine which server a key will be stored, we first start from position of the key and go clockwise until we meet
+the first server. Like following img.</p>
+<p><img src="/map_key_ring.png" alt="img"></p>
+<p>As you can image, when adding a new server, that server may be somewhere on the ring. Only portion of keys that is being on the
+server next to the new server we placed, more specifically the ones behind the new server, will be redistributed. Similarly, removing
+a server is done with the same process.</p>
+<h2 id="3-issue-with-consistent-hashing">3. Issue with Consistent hashing.</h2>
+<p>Several issues on consistent hashing can be noticed are:</p>
+<ol>
+<li>Impossible to keep the same size of partitions on the ring as we remove and add servers.</li>
+<li>The hash function may mess up by allocating a server with a large portion.
+If these issues happen, we end up returning back to the rehashing problem.</li>
+</ol>
+<p>We can use a technique called <strong>virtual nodes</strong> which allows us to represent a server with several virtual nodes, instead
+of 1 node. Like following image, each server has 3 nodes.</p>
+<p><img src="/virtual_node_ring.png" alt="img"></p>
+<p>The process of choosing where to store a key is the same. The only difference is that as you add more virtual nodes for each server
+, the distribution of keys becomes more balanced. This is because the standard deviation gets smaller with
+more virtual nodes, leading to balanced data distribution. Research has experienced with the algorithm and
+shows that the standard deviation is 5% (for 200 virtual nodes) and 10% for (100 virtual nodes). However, with more
+nodes added, the more memory is used. Therefore, tuning to choose the one that fits your requirement is important.</p>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
