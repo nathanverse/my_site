@@ -76,11 +76,11 @@ Three things you may want to configure are:
 + Core pool size: which is the size the executor will try to maintain throughout its lifecycle even if there is no task currently being
 executed.
 + Maximum pool size: Maximum threads will be created if the queue is fully filled with tasks.
-+ Keep-alive time: Threads with life span exceed this time will be marked as idle and can be terminated.
++ Keep-alive time: Threads with life span exceeding this time will be marked as idle and can be terminated.
 
-In `newFixedThreadPool`, the thread pool has the core pool size equally to the maximum pool size, this mean thread number will be kept
-the same indefinitely. With `newCachedThreadPool`, the maximum pool size is `Integer.MAX_VALUE` and the core pool size is 0, creating the
-effect of an infinitely expandable thread pool that will contract again when demand decreases.
+In `newFixedThreadPool`, the core pool size and the maximum pool size are equal, meaning the number of threads remains constant. 
+Conversely, `newCachedThreadPool` has a core pool size of `0` and a maximum pool size of `Integer.MAX_VALUE`, effectively 
+creating an infinitely expandable thread pool that shrinks automatically when threads become idle.
 
 ## 3.2 Managing Queued tasks
 If the clients throw requests at the servers faster than the servers can handle them, queuing tasks may lead to memory exhaustion, and you
@@ -102,3 +102,85 @@ You can also use `PriorityBlockingQueue`, if you want to execute certain tasks f
 As you already known, if your tasks depend on each other, unbounded queue and thread pool is suitable than bounded ones because they
 prevent thread starvation. In this case, you may want to use `newCachedThreadPool` factory.
 
+## 3.3 Saturation policies
+There are 4 common saturation policies:
+- `AbortPolicy`: throw an exception `Rejected-ExecutionException` if the queue filled up
+- `DiscardPolicy`: Silently discard the requested task.
+- `DiscardOldestPolicy`: Discard the old task, try to insert the newly added tasks. (usually is not preferred in `PriorityBlockingQueue`).
+- `CallerRunsPolicy`: When the queue is full, the task will be executed in the caller thread (which calls `execute()` on `Executor`), this
+would lead to the point where the main thread get blocked and stop receiving connections through `accept()`. The requests will be then
+in waiting queue under TCP layer (which has finite queue) until the server can't handle anymore and stop the further requests. This
+policy is usually favored.
+
+Though there is no built-in policy to block the caller threads, you can use `Semaphore` to implement it, following is the example code:
+
+```java
+@ThreadSafe
+public class BoundedExecutor {
+    private final Executor exec;
+    private final Semaphore semaphore;
+    public BoundedExecutor(Executor exec, int bound) {
+        this.exec = exec;
+        this.semaphore = new Semaphore(bound);
+}
+    public void submitTask(final Runnable command) throws InterruptedException {
+        semaphore.acquire();
+        try {
+            exec.execute(new Runnable() {
+                public void run() {
+                    try {
+                        command.run();
+                    } finally {
+                        semaphore.release();
+                    } 
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            semaphore.release();
+        }
+    } 
+}
+```
+
+## 4. Extending `ThreadPoolExecutor`
+
+`ThreadPoolExecutor` is designed for extension, providing several hooks like:
++ `beforeExecute`: Executed in the same thread with the task before executing the task. Tasks throw in this hook will not be executed.
++ `afterExecute`: Executed after the task is done or throw.
++ `terminate`: Execute after the executor is executed.
+
+You can add logging like the elapsed time a task is executed, the number of tasks have been executed in the executor, notification, or some statistics in these hooks.
+
+## 5. Parallelizing Recursive algorithm
+Loops whose bodies contain nontrivial computation or perform potentially blocking I/O are good candidates for parallelization.
+
+One good application for parallelization is the Puzzle problem, which has the current position, and the goal position needed to achieve to win the game. It often has:
+1. As being said, the initial position and the target position.
+2. The set of legal moves from a position to another position.
+3. A way to move to the next position.
+4. way to check whether the current position is the target position.
+
+Defined as following:
+
+```java
+public interface Puzzle<P, M> {
+    P initialPosition();
+    boolean isGoal(P position);
+    Set<M> legalMoves(P position);
+    P move(P position, M move);
+}
+```
+
+Navigating problems like this often involves exploring all possible states or positions to pinpoint the desired outcome. Algorithms such as Depth-First Search (DFS) or Breadth-First Search
+(BFS) are common approaches, frequently implemented using recursion. To boost performance, we can introduce concurrency by distributing the task of examining each state across a 
+pool of threads.
+
+Consider implementing a Minesweeper puzzle as a practical exercise. The challenge involves:
+
++ **Initial state**: A grid where all squares are initially unrevealed.
++ **Goal state**: Revealing all non-mine squares on the board.
+
+Key implementation considerations include:
++ **Early termination**: Once a thread identifies the goal state, it should signal all other threads to halt and return the result.
++ **Scalability and responsiveness**: Given potentially large boards, your program should allow the user to interrupt the search and exit gracefully, 
+ensuring no threads remain active or 'leak'.
