@@ -26,21 +26,21 @@ the number of current services. This is done by using a concept of ring.
 Suppose that we have a hash function that when input with a key will produce a number from `x_0`, `x_1`, ... to `x_n`. These values are distributed
 evenly on following ring.
 
-![img](/ring.png)
+![img](/my_site/ring.png)
 
 
 Using the hash function, we can map servers based on server IP or name onto the ring.
 
-![img](/servers_on_ring.png)
+![img](/my_site/servers_on_ring.png)
 
 Keys are also input to produce values placed on these rings.
 
-![img](/complete_ring.png)
+![img](/my_site/complete_ring.png)
 
 To determine which server a key will be stored, we first start from position of the key and go clockwise until we meet
 the first server. Like following img.
 
-![img](/map_key_ring.png)
+![img](/my_site/map_key_ring.png)
 
 As you can image, when adding a new server, that server may be somewhere on the ring. Only portion of keys that is being on the
 server next to the new server we placed, more specifically the ones behind the new server, will be redistributed. Similarly, removing
@@ -55,7 +55,7 @@ If these issues happen, we end up returning back to the rehashing problem.
 We can use a technique called **virtual nodes** which allows us to represent a server with several virtual nodes, instead
 of 1 node. Like following image, each server has 3 nodes.
 
-![img](/virtual_node_ring.png)
+![img](/my_site/virtual_node_ring.png)
 
 The process of choosing where to store a key is the same. The only difference is that as you add more virtual nodes for each server
 , the distribution of keys becomes more balanced. This is because the standard deviation gets smaller with 

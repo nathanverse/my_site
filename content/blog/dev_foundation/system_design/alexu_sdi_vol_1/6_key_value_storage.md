@@ -44,7 +44,7 @@ must either choose only consistency and availability.
 
 For example, the following img illustrates the system with 3 nodes, and one node `n3` is going down.
 
-![img](/cao.png)
+![img](/my_site/cao.png)
 
 In this case, if you choose consistency (like financial system which emphasizes the importance of seeing latest balance). When latest 
 balance is written to `n3` but fails to propagate to other nodes before terminating, we can't write and read in other nodes, thereby

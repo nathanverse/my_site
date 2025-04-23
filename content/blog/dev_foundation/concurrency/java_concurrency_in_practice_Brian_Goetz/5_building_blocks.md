@@ -41,7 +41,7 @@ public static void deleteLast(Vector list) {
 If we have two threads, each doing operation of these methods concurrently. Like
 following images
 
-![img](/vector_problem.png)
+![img](/my_site/vector_problem.png)
 
 The thread calling `getClass` might throw `ArrayIndexOutOfBoundsException`,
 as the `size` it obtained from the `vector` is outdated.
