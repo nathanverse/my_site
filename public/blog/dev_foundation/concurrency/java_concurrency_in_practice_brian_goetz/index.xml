@@ -7,8 +7,15 @@
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2020, Jane Doe.</copyright>
-    <lastBuildDate>Mon, 07 Apr 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 11 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>6. Thread pools</title>
+      <link>http://localhost:1313/6.-thread-pools/</link>
+      <pubDate>Fri, 11 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/6.-thread-pools/</guid>
+      <description>&lt;h1 id=&#34;1-implicit-couplings-between-tasks-and-execution-policies&#34;&gt;1. Implicit couplings between tasks and execution policies.&lt;/h1&gt;&#xA;&lt;p&gt;While the &lt;code&gt;Executors&lt;/code&gt; offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible&#xA;with all execution policies, these tasks include:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly&#xA;create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait&#xA;a condition that never is fulfilled. (more on this is discussed in 1.1).&lt;/li&gt;&#xA;&lt;li&gt;Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than&#xA;multithreaded one.&lt;/li&gt;&#xA;&lt;li&gt;Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into&#xA;executor with full of long-running tasks often are not suitable.&lt;/li&gt;&#xA;&lt;li&gt;Tasks that use &lt;code&gt;ThreadLocal&lt;/code&gt;: states in &lt;code&gt;ThreadLocal&lt;/code&gt; can be shared between thread. If you want to submit that task in the executor,&#xA;you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and&#xA;use another thread to serve your task.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;These reasons explain that thread pools work best when tasks are homogeneous and independent.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>5. Cancellation and shutdown</title>
       <link>http://localhost:1313/5.-cancellation-and-shutdown/</link>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<title>8. Thread pools | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="8. Thread pools" />
+<meta name="description" content="1. Implicit couplings between tasks and execution policies.
+While the Executors offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible
+with all execution policies, these tasks include:
+
+Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly
+create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait
+a condition that never is fulfilled. (more on this is discussed in 1.1).
+Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than
+multithreaded one.
+Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into
+executor with full of long-running tasks often are not suitable.
+Tasks that use ThreadLocal: states in ThreadLocal can be shared between thread. If you want to submit that task in the executor,
+you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and
+use another thread to serve your task.
+
+These reasons explain that thread pools work best when tasks are homogeneous and independent." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/8.-thread-pools/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="8. Thread pools">
+  <meta property="og:description" content="1. Implicit couplings between tasks and execution policies. While the Executors offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible with all execution policies, these tasks include:
+Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait a condition that never is fulfilled. (more on this is discussed in 1.1). Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than multithreaded one. Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into executor with full of long-running tasks often are not suitable. Tasks that use ThreadLocal: states in ThreadLocal can be shared between thread. If you want to submit that task in the executor, you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and use another thread to serve your task. These reasons explain that thread pools work best when tasks are homogeneous and independent.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-04-11T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-04-11T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:title" content="8. Thread pools">
+  <meta name="twitter:description" content="1. Implicit couplings between tasks and execution policies. While the Executors offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible with all execution policies, these tasks include:
+Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait a condition that never is fulfilled. (more on this is discussed in 1.1). Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than multithreaded one. Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into executor with full of long-running tasks often are not suitable. Tasks that use ThreadLocal: states in ThreadLocal can be shared between thread. If you want to submit that task in the executor, you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and use another thread to serve your task. These reasons explain that thread pools work best when tasks are homogeneous and independent.">
+
+
+
+
+  <meta itemprop="name" content="8. Thread pools">
+  <meta itemprop="description" content="1. Implicit couplings between tasks and execution policies. While the Executors offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible with all execution policies, these tasks include:
+Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait a condition that never is fulfilled. (more on this is discussed in 1.1). Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than multithreaded one. Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into executor with full of long-running tasks often are not suitable. Tasks that use ThreadLocal: states in ThreadLocal can be shared between thread. If you want to submit that task in the executor, you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and use another thread to serve your task. These reasons explain that thread pools work best when tasks are homogeneous and independent.">
+  <meta itemprop="datePublished" content="2025-04-11T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-11T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1600">
+  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+<a href="/bear/">Bear</a>
+
+<a href="/hugo/">Hugo</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>8. Thread pools</h1>
+<p>
+  <i>
+    <time datetime='2025-04-11' pubdate>
+      11 Apr, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="1-implicit-couplings-between-tasks-and-execution-policies">1. Implicit couplings between tasks and execution policies.</h1>
+<p>While the <code>Executors</code> offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible
+with all execution policies, these tasks include:</p>
+<ul>
+<li>Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly
+create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait
+a condition that never is fulfilled. (more on this is discussed in 1.1).</li>
+<li>Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than
+multithreaded one.</li>
+<li>Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into
+executor with full of long-running tasks often are not suitable.</li>
+<li>Tasks that use <code>ThreadLocal</code>: states in <code>ThreadLocal</code> can be shared between thread. If you want to submit that task in the executor,
+you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and
+use another thread to serve your task.</li>
+</ul>
+<p>These reasons explain that thread pools work best when tasks are homogeneous and independent.</p>
+<h2 id="11-thread-starvation-deadlock">1.1. Thread starvation deadlock</h2>
+<p>Tasks depend on another task in the queue (like waiting their results or side effect) may cause deadlock on the thread. For example,
+a task that puts other tasks in the queue of single-threaded executor and wait for their results always faces deadlock.</p>
+<p>This is the same with multithreaded executor when a task may wait another task that is never picked up, because other threads are too busy.
+There are various reasons that cause deadlock too. The idea is whenever your queue contains dependent tasks, you are risking with thread
+starvation. In these cases, you may want to document down the configurations of the executor, like minimal pool sizing to avoid the issue.</p>
+<p>Other resource constraints, such as JDBC connections, should be aware as well. Such resource can block your thread from execution if it reaches
+the limit. In this case, 10 connections mean only 10 threads can be executed concurrently.</p>
+<h2 id="12-long-running-tasks">1.2. Long-running tasks</h2>
+<p>One solution to address the issue where long-running tasks clog the queue, preventing other smalls tasks from making progress, is use timed
+resource waits instead of unbounded wait, like putting the timeout on <code>Thread.join</code>, <code>BlockingQueue.put</code>. When a task is timed out, the
+task could be aborted or queued again later, allowing other tasks to make progress.</p>
+<h1 id="2-sizing-thread-pools">2. Sizing thread pools</h1>
+<p>To size the thread pool properly, you need to understand your computing environment, your resource budget, and nature of your tasks:</p>
+<ol>
+<li>How many processors does the deployment system have? How much memory?</li>
+<li>Do tasks perform mostly computation, I/O, or some combination?</li>
+<li>Do they require the scare resource, such as JDBC connection?</li>
+</ol>
+<p>For compute-intensive tasks, the suitable number of threads typically is the number of processor plus 1. Adding one more thread meant to cover
+cases where tasks are interrupted. Even if it is CPU-bound task, there is case it is temporarily stopped due to page fault, preemptive
+multitasking, or synchronization.</p>
+<p>We often want a larger pool for tasks that include I/O or other blocking operations (it is not the case if you are using non-blocking
+technique) because most threads will not be schedulable at all times.</p>
+<p>In another word, you need to estimate the ratio of waiting time to compute time for your tasks; this estimate need not be precise and can be
+obtained through pro‐filing or instrumentation. Alternatively, you can benchmark different pool sizes under heavy loads and observe the
+level of CPU utilization to choose the appropriate size.</p>
+<p>Given these definitions, following is the formula:</p>
+<p><img src="/pool_size_formula.png" alt="img"></p>
+<p>As mentioned other resources also a factor determining your pool size, like JDBC connections. Although, these are easier to estimate the correct
+pool size, just get the total of resources divided by the number of resources need per task.</p>
+<h1 id="3-configuring-threadpoolexecutor">3. Configuring <code>ThreadPoolExecutor</code></h1>
+<p>Static methods such as <code>newCachedThreadPool</code>, <code>newFixedThreadPool</code> in <code>Executor</code> class provides <code>ThreadPoolExecutor</code> as a basic implementation
+for <code>ExecutorService</code>. If you don&rsquo;t satisfy with these default configurations, you can customize through <code>ThreadPoolExecutor</code>
+constructors.</p>
+<h2 id="31-thread-creation-and-teardown">3.1. Thread creation and teardown.</h2>
+<p>Three things you may want to configure are:</p>
+<ul>
+<li>Core pool size: which is the size the executor will try to maintain throughout its lifecycle even if there is no task currently being
+executed.</li>
+<li>Maximum pool size: Maximum threads will be created if the queue is fully filled with tasks.</li>
+<li>Keep-alive time: Threads with life span exceeding this time will be marked as idle and can be terminated.</li>
+</ul>
+<p>In <code>newFixedThreadPool</code>, the core pool size and the maximum pool size are equal, meaning the number of threads remains constant.
+Conversely, <code>newCachedThreadPool</code> has a core pool size of <code>0</code> and a maximum pool size of <code>Integer.MAX_VALUE</code>, effectively
+creating an infinitely expandable thread pool that shrinks automatically when threads become idle.</p>
+<h2 id="32-managing-queued-tasks">3.2 Managing Queued tasks</h2>
+<p>If the clients throw requests at the servers faster than the servers can handle them, queuing tasks may lead to memory exhaustion, and you
+may want to use some techniques to throttle arrival rate (like rate limiter). Even before you run out of memory, response time will get
+progressively worse as the task queue grows.</p>
+<p><code>ThreadPoolExecutor</code> allows you to supply a <code>BlockingQueue</code> to hold tasks awaiting execution. There are three basic approaches
+to task queuing:</p>
+<ul>
+<li>Unbounded queue: the drawback of this type of queue was mentioned.</li>
+<li>Bounded queue: You have to determine what to do with incoming tasks when the queue is full (this called saturation policies, discussed in 3.3)</li>
+<li>Synchronous handoff: Handing off tasks directly to thread. In this method, there has to be a thread to accept the handoff before the
+main thread moves on. If there is no thread is waiting, and the maximum count hasn&rsquo;t been reached, the executor will create a new thread
+to accept the handoff. Otherwise, the task will be rejected by the saturation policy. This method can be more efficient than traditional queueing method
+, especially for large pool size,, because there is no delay in putting and fetching task. <code>newCachedThreadPool</code> factory uses this kind of
+queue.</li>
+</ul>
+<p>You can also use <code>PriorityBlockingQueue</code>, if you want to execute certain tasks first before the others.</p>
+<p>As you already known, if your tasks depend on each other, unbounded queue and thread pool is suitable than bounded ones because they
+prevent thread starvation. In this case, you may want to use <code>newCachedThreadPool</code> factory.</p>
+<h2 id="33-saturation-policies">3.3 Saturation policies</h2>
+<p>There are 4 common saturation policies:</p>
+<ul>
+<li><code>AbortPolicy</code>: throw an exception <code>Rejected-ExecutionException</code> if the queue filled up</li>
+<li><code>DiscardPolicy</code>: Silently discard the requested task.</li>
+<li><code>DiscardOldestPolicy</code>: Discard the old task, try to insert the newly added tasks. (usually is not preferred in <code>PriorityBlockingQueue</code>).</li>
+<li><code>CallerRunsPolicy</code>: When the queue is full, the task will be executed in the caller thread (which calls <code>execute()</code> on <code>Executor</code>), this
+would lead to the point where the main thread get blocked and stop receiving connections through <code>accept()</code>. The requests will be then
+in waiting queue under TCP layer (which has finite queue) until the server can&rsquo;t handle anymore and stop the further requests. This
+policy is usually favored.</li>
+</ul>
+<p>Though there is no built-in policy to block the caller threads, you can use <code>Semaphore</code> to implement it, following is the example code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BoundedExecutor</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Executor exec;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Semaphore semaphore;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">BoundedExecutor</span>(Executor exec, <span style="color:#66d9ef">int</span> bound) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">exec</span> <span style="color:#f92672">=</span> exec;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">semaphore</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Semaphore(bound);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">submitTask</span>(<span style="color:#66d9ef">final</span> Runnable command) <span style="color:#66d9ef">throws</span> InterruptedException {
+</span></span><span style="display:flex;"><span>        semaphore.<span style="color:#a6e22e">acquire</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            exec.<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                        command.<span style="color:#a6e22e">run</span>();
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                        semaphore.<span style="color:#a6e22e">release</span>();
+</span></span><span style="display:flex;"><span>                    } 
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            });
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (RejectedExecutionException e) {
+</span></span><span style="display:flex;"><span>            semaphore.<span style="color:#a6e22e">release</span>();
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="4-extending-threadpoolexecutor">4. Extending <code>ThreadPoolExecutor</code></h2>
+<p><code>ThreadPoolExecutor</code> is designed for extension, providing several hooks like:</p>
+<ul>
+<li><code>beforeExecute</code>: Executed in the same thread with the task before executing the task. Tasks throw in this hook will not be executed.</li>
+<li><code>afterExecute</code>: Executed after the task is done or throw.</li>
+<li><code>terminate</code>: Execute after the executor is executed.</li>
+</ul>
+<p>You can add logging like the elapsed time a task is executed, the number of tasks have been executed in the executor, notification, or some statistics in these hooks.</p>
+<h2 id="5-parallelizing-recursive-algorithm">5. Parallelizing Recursive algorithm</h2>
+<p>Loops whose bodies contain nontrivial computation or perform potentially blocking I/O are good candidates for parallelization.</p>
+<p>One good application for parallelization is the Puzzle problem, which has the current position, and the goal position needed to achieve to win the game. It often has:</p>
+<ol>
+<li>As being said, the initial position and the target position.</li>
+<li>The set of legal moves from a position to another position.</li>
+<li>A way to move to the next position.</li>
+<li>way to check whether the current position is the target position.</li>
+</ol>
+<p>Defined as following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Puzzle</span><span style="color:#f92672">&lt;</span>P, M<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    P <span style="color:#a6e22e">initialPosition</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">isGoal</span>(P position);
+</span></span><span style="display:flex;"><span>    Set<span style="color:#f92672">&lt;</span>M<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">legalMoves</span>(P position);
+</span></span><span style="display:flex;"><span>    P <span style="color:#a6e22e">move</span>(P position, M move);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Navigating problems like this often involves exploring all possible states or positions to pinpoint the desired outcome. Algorithms such as Depth-First Search (DFS) or Breadth-First Search
+(BFS) are common approaches, frequently implemented using recursion. To boost performance, we can introduce concurrency by distributing the task of examining each state across a
+pool of threads.</p>
+<p>Consider implementing a Minesweeper puzzle as a practical exercise. The challenge involves:</p>
+<ul>
+<li><strong>Initial state</strong>: A grid where all squares are initially unrevealed.</li>
+<li><strong>Goal state</strong>: Revealing all non-mine squares on the board.</li>
+</ul>
+<p>Key implementation considerations include:</p>
+<ul>
+<li><strong>Early termination</strong>: Once a thread identifies the goal state, it should signal all other threads to halt and return the result.</li>
+<li><strong>Scalability and responsiveness</strong>: Given potentially large boards, your program should allow the user to interrupt the search and exit gracefully,
+ensuring no threads remain active or &rsquo;leak'.</li>
+</ul>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

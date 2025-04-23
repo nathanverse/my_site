@@ -10,10 +10,10 @@
     <lastBuildDate>Thu, 10 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/dev_foundation/system_design/alexu_sdi_vol_1/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>5. Consistent hashing</title>
-      <link>http://localhost:1313/5.-consistent-hashing/</link>
+      <title>6. Consistent hashing</title>
+      <link>http://localhost:1313/6.-consistent-hashing/</link>
       <pubDate>Thu, 10 Apr 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/5.-consistent-hashing/</guid>
+      <guid>http://localhost:1313/6.-consistent-hashing/</guid>
       <description>&lt;p&gt;To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers.&#xA;Consistent hashing is a commonly used technique to achieve this goal.&lt;/p&gt;&#xA;&lt;h2 id=&#34;1-the-rehashing-problem&#34;&gt;1. The rehashing problem&lt;/h2&gt;&#xA;&lt;p&gt;Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down,&#xA;you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.&lt;/p&gt;</description>
     </item>
     <item>

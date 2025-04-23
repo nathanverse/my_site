@@ -1,5 +1,5 @@
 +++
-title = "8. Thread pools"
+title = "6. Thread pools"
 date = "2025-04-11"
 tags = [
     "markdown",
@@ -60,7 +60,7 @@ level of CPU utilization to choose the appropriate size.
 
 Given these definitions, following is the formula:
 
-[img](/pool_size_formula.png)
+![img](/pool_size_formula.png)
 
 As mentioned other resources also a factor determining your pool size, like JDBC connections. Although, these are easier to estimate the correct
 pool size, just get the total of resources divided by the number of resources need per task.

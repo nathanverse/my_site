@@ -1,5 +1,5 @@
 +++
-title = "5. Consistent hashing"
+title = "6. Consistent hashing"
 date = "2025-04-10"
 tags = [
     "markdown",
