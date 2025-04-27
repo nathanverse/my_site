@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="feat: add 2.1, 2.2 in blog 5">
+      <change afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/9_gui_app.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/5_building_blocks.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/5_building_blocks.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/8_thread_pools.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/8_thread_pools.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_programming_language__Ken_Arnold/14_10_visibility.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_programming_language__Ken_Arnold/14_10_visibility.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/5_consistent_hashing.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/5_consistent_hashing.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/6_key_value_storage.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/system_design/alexu_sdi_vol_1/6_key_value_storage.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hugo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/hugo.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
