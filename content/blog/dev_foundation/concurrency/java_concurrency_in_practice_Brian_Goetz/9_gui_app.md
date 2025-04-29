@@ -1,5 +1,5 @@
 +++
-title = "9. GUI applications"
+title = "7. GUI applications"
 date = "2025-04-23"
 tags = [
     "markdown",
