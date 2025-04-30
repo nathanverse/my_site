@@ -276,3 +276,11 @@ Java version greater than 6.0 supports dumping explicit locks. You should notice
 a thread and not the section of code like intrinsic lock, explicit locks when dumped may be imprecise about which stack it was acquired at.
 
 # 3. Other liveness hazards.
+Other than deadlock, there are other kinds of liveness hazard. The most common one probably is starvation where threads need certain kind of
+resource to make progress, but its request to access the resource is always denied.
+
+A typical resource to manage is CPU cycles. While the idea of tweaking thread priorities might seem like a straightforward solution – 
+for instance, prioritizing the event thread in a GUI system to enhance responsiveness – it frequently proves unnecessary in most 
+applications. Worse, it can lead to CPU cycle starvation for threads with lower priority. Furthermore, the varying ways operating 
+systems handle priorities, and how the JVM maps to them, means this approach can undermine your application's platform independence, 
+a generally undesirable outcome.
