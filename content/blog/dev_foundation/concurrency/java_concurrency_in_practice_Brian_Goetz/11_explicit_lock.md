@@ -98,7 +98,7 @@ to check the interruption flag or manage timeout condition.
 Intrinsic lock in Java 5.0 performs much less efficient then `ReentrantLock`. However, this gap is narrow down since Java 6.0. 
 
 It is worth to refer or perform a benchmark if you are in question about a lock mechanism performance.
-## 3. Fairness
+# 3. Fairness
 A common tendency among developers is to advocate for fairness in lock acquisition, aiming to prevent new threads from "barging in" and causing thread starvation.
 However, non-fair mechanisms offer their own advantages:
 1. They minimize thread switching.
@@ -118,4 +118,4 @@ mechanism called *stripping lock*, is also illustrated in the graph:
 
 Intrinsic lock doesn't offer fair lock acquisition mechanism. However, it is good enough for most situations.
 
-## 4. Choosing Between Synchronized and ReentrantLock
+# 4. Choosing Between Synchronized and ReentrantLock
