@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-US">
 
-<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=51283&amp;path=my_site/livereload" data-no-instant defer></script>
   <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
+<link rel="shortcut icon" href="http://localhost:51283/my_site/images/favicon.png" />
 <title>9. Explicit lock | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
 <meta name="title" content="9. Explicit lock" />
 <meta name="description" content="1. Lock and Reentrantlock.
@@ -42,7 +42,7 @@ leaving the system hanging." />
 <meta name="keywords" content="markdown,syntax," />
 
 
-<meta property="og:url" content="http://localhost:1313/my_site/9.-explicit-lock/">
+<meta property="og:url" content="http://localhost:51283/my_site/9.-explicit-lock/">
   <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
   <meta property="og:title" content="9. Explicit lock">
   <meta property="og:description" content="1. Lock and Reentrantlock. ReentrantLock allows you put timeout on lock acquisition, offering greater thread liveness.
@@ -56,13 +56,13 @@ Following is the code example:
     <meta property="article:modified_time" content="2025-04-30T00:00:00+00:00">
     <meta property="article:tag" content="Markdown">
     <meta property="article:tag" content="Syntax">
-    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
+    <meta property="og:image" content="http://localhost:51283/my_site/images/share.png">
 
 
 
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
+  <meta name="twitter:image" content="http://localhost:51283/my_site/images/share.png">
   <meta name="twitter:title" content="9. Explicit lock">
   <meta name="twitter:description" content="1. Lock and Reentrantlock. ReentrantLock allows you put timeout on lock acquisition, offering greater thread liveness.
 It also offers more flexible locking mechanism, where you can expand lock section across methods.
@@ -79,8 +79,8 @@ Following is the code example:
 1 2 3 4 5 6 7 8 9 Lock lock = new ReentrantLock(); ... lock.lock(); try { // update object state // catch exceptions and restore invariants if necessary } finally { lock.unlock(); } You would need to lock and unlock when you enter and exit the race condition code. Users of this lock must be wary about unlock() calls, because minor mistakes can cause code path never call unlock(), leaving the system hanging.">
   <meta itemprop="datePublished" content="2025-04-30T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-04-30T00:00:00+00:00">
-  <meta itemprop="wordCount" content="927">
-  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
+  <meta itemprop="wordCount" content="1303">
+  <meta itemprop="image" content="http://localhost:51283/my_site/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -417,7 +417,7 @@ to check the interruption flag or manage timeout condition.</li>
 </ul>
 <p>Intrinsic lock in Java 5.0 performs much less efficient then <code>ReentrantLock</code>. However, this gap is narrow down since Java 6.0.</p>
 <p>It is worth to refer or perform a benchmark if you are in question about a lock mechanism performance.</p>
-<h2 id="3-fairness">3. Fairness</h2>
+<h1 id="3-fairness">3. Fairness</h1>
 <p>A common tendency among developers is to advocate for fairness in lock acquisition, aiming to prevent new threads from &ldquo;barging in&rdquo; and causing thread starvation.
 However, non-fair mechanisms offer their own advantages:</p>
 <ol>
@@ -433,14 +433,47 @@ specific fairness requirement exists.</p>
 mechanism called <em>stripping lock</em>, is also illustrated in the graph:
 <img src="/my_site/lock_fairness_comparison.png" alt="img"></p>
 <p>Intrinsic lock doesn&rsquo;t offer fair lock acquisition mechanism. However, it is good enough for most situations.</p>
-<h2 id="4-choosing-between-synchronized-and-reentrantlock">4. Choosing Between Synchronized and ReentrantLock</h2>
+<h1 id="4-choosing-between-synchronized-and-reentrantlock">4. Choosing Between Synchronized and ReentrantLock</h1>
+<p>Although most discussions in previous sections tend to favor the use of <code>ReentrantLock</code>, intrinsic lock is often chosen by developers
+because it is safer in terms of locking management thanks to its block structured locking, thus make code more maintainable and readable.
+Also, many improvements from Java community is favor <code>synchronized</code> over <code>ReentrantLock</code> too, such as lock elision for
+thread‐confined lock objects and lock coarsening to eliminate synchronization with intrinsic locks (introduced in chapter 10).</p>
+<p>Unless you need features like timed, interruptible, non-block-structured lock, or you are using Java 5.0, it is not recommended to
+use <code>ReenttrantLock</code> just for the shake of better performance.</p>
+<h1 id="5-read-write-locks">5. Read-write locks</h1>
+<p>When your data structure is read-intensive, another lock should be considered is <code>ReadWriteLick</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">ReadWriteLock</span> {
+</span></span><span style="display:flex;"><span>    Lock <span style="color:#a6e22e">readLock</span>();
+</span></span><span style="display:flex;"><span>    Lock <span style="color:#a6e22e">writeLock</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This lock operates under the principle that either multiple readers can access a resource concurrently, or a single writer has exclusive access.</p>
+<p>As such, the performance of this lock heavily depends on the read/write ratio of your application. Therefore, it&rsquo;s advisable to profile
+your program to determine whether a <code>ReadWriteLock</code> or a traditional exclusive lock yields better performance in your specific use case.</p>
+<p>Similar to exclusive locks, the implementation details of a <code>ReadWriteLock</code> can significantly impact its performance,
+scheduling guarantees, acquisition preferences, fairness, and locking semantics. For instance, consider the following aspects:</p>
+<ul>
+<li><strong>Fairness</strong>: Should preference be given to writers or readers when acquiring the lock, or should a first-come, first-served policy be enforced?</li>
+<li><strong>Reentrancy</strong>: Are the read and write locks reentrant? In this context, we distinguish between two types of reentrancy:
+<ul>
+<li><strong>Downgrading</strong>: A thread holding the write lock wishes to acquire the read lock.</li>
+<li><strong>Upgrading</strong>: This is the opposite of <em>Downgrading</em> and poses a greater challenge. When attempting to upgrade from a read lock to
+a write lock, the thread might need to wait for numerous existing readers to release their locks. More critically, if two
+readers attempt to upgrade simultaneously, a deadlock can potentially occur.</li>
+</ul>
+</li>
+</ul>
+<p><code>ReentrantReadWriteLock</code> is one available implementation that allows configuration of the fairness property. Regarding reentrancy,
+it supports <em>Downgrading</em> but explicitly disallows <em>Upgrading</em>.</p>
+<p>The following graph compares the performance of <code>ReadWriteLock</code> and <code>ReentrantLock</code> when used to implement a thread-safe <code>ArrayList</code>
+in an application where read operations are significantly more frequent than write operations.</p>
+<p><img src="/my_site/java_array_read_write_lock_performance.png" alt="img"></p>
 
 </content>
 <p>
   
-  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
+  <a href="http://localhost:51283/my_site/blog/markdown/">#Markdown</a>
   
-  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
+  <a href="http://localhost:51283/my_site/blog/syntax/">#Syntax</a>
   
 </p>
 
