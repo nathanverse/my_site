@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
+<title>7. GUI applications | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="7. GUI applications" />
+<meta name="description" content="1. Why are GUIs single-threaded?
+There have been many attempts to write multithreaded GUI frameworks, but because of the persistent problems
+with race conditions and deadlock, almost all GUI frameworks transition to use single-threaded approach. For example,
+AWT originally tried to support greater degree of multithreaded access, and the decision to make Swing single-threaded was based largely on experience with  AWT
+Concurrency hazards often occur in GUI framework, because the program often deals with many events that modify
+different states of components. These components can depend on each other, making it easy to encounter deadlock." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/my_site/7.-gui-applications/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="7. GUI applications">
+  <meta property="og:description" content="1. Why are GUIs single-threaded? There have been many attempts to write multithreaded GUI frameworks, but because of the persistent problems with race conditions and deadlock, almost all GUI frameworks transition to use single-threaded approach. For example, AWT originally tried to support greater degree of multithreaded access, and the decision to make Swing single-threaded was based largely on experience with AWT
+Concurrency hazards often occur in GUI framework, because the program often deals with many events that modify different states of components. These components can depend on each other, making it easy to encounter deadlock.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-04-23T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-04-23T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
+  <meta name="twitter:title" content="7. GUI applications">
+  <meta name="twitter:description" content="1. Why are GUIs single-threaded? There have been many attempts to write multithreaded GUI frameworks, but because of the persistent problems with race conditions and deadlock, almost all GUI frameworks transition to use single-threaded approach. For example, AWT originally tried to support greater degree of multithreaded access, and the decision to make Swing single-threaded was based largely on experience with AWT
+Concurrency hazards often occur in GUI framework, because the program often deals with many events that modify different states of components. These components can depend on each other, making it easy to encounter deadlock.">
+
+
+
+
+  <meta itemprop="name" content="7. GUI applications">
+  <meta itemprop="description" content="1. Why are GUIs single-threaded? There have been many attempts to write multithreaded GUI frameworks, but because of the persistent problems with race conditions and deadlock, almost all GUI frameworks transition to use single-threaded approach. For example, AWT originally tried to support greater degree of multithreaded access, and the decision to make Swing single-threaded was based largely on experience with AWT
+Concurrency hazards often occur in GUI framework, because the program often deals with many events that modify different states of components. These components can depend on each other, making it easy to encounter deadlock.">
+  <meta itemprop="datePublished" content="2025-04-23T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-23T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1320">
+  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/my_site/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/my_site/">Home</a>
+
+<a href="/my_site/bear/">Bear</a>
+
+<a href="/my_site/hugo/">Hugo</a>
+
+
+<a href="/my_site/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>7. GUI applications</h1>
+<p>
+  <i>
+    <time datetime='2025-04-23' pubdate>
+      23 Apr, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="1-why-are-guis-single-threaded">1. Why are GUIs single-threaded?</h1>
+<p>There have been many attempts to write multithreaded GUI frameworks, but because of the persistent problems
+with race conditions and deadlock, almost all GUI frameworks transition to use single-threaded approach. For example,
+AWT originally tried to support greater degree of multithreaded access, and the decision to make Swing single-threaded was based largely on experience with  AWT</p>
+<p>Concurrency hazards often occur in GUI framework, because the program often deals with many events that modify
+different states of components. These components can depend on each other, making it easy to encounter deadlock.</p>
+<p>The MVC pattern also one of the causes of deadlock. The controller can call into view, and model, while view can
+query model states by callbacks. The pattern may potentially lead to inconsistent lock ordering.</p>
+<p>Single-threaded approach achieves thread safety via thread confinement. It is the developer responsibility
+to make sure visual components and data models are properly confined.</p>
+<h2 id="11-sequential-event-processing">1.1. Sequential event processing.</h2>
+<p>Events such as mouse clicks, key presses, or timer expiration are handled sequentially. If one task is lengthy,
+it could make user inputs, like press button, or visual feedback appear to be frozen. Therefore, all
+I/O blocking, or CPU intensive tasks must be handed off to other threads.</p>
+<h2 id="12-thread-confinement-in-swing">1.2. Thread confinement in Swing.</h2>
+<p>All data models and components in Swing are only allowed to be created and updated by the UI thread.</p>
+<p>Sending tasks to be executed on the UI thread or subscribe listeners to events from other threads
+is through <code>SpringUtilities</code> methods, which ensure to be thread-safe:</p>
+<ol>
+<li><code>SwingUtilities.isEventDispatchThread</code>: which determines whether the current thread is the event thread;</li>
+<li><code>SwingUtilities.invokeLater</code>: which schedules a Runnable for execution on the event thread (callable from any thread);</li>
+<li><code>SwingUtilities.invokeAndWait</code>: which schedules a Runnable task for execution on the event thread and blocks the
+current thread until it completes (callable only from a non‐GUI thread);</li>
+<li>methods to enqueue a repaint or revalidation request on the event queue (callable from any thread); and</li>
+<li>methods for adding and removing listeners (can be called from any thread, but listeners will always be invoked
+in the event thread).</li>
+</ol>
+<p>The method exposed in 1,2,3 looks the same as a single-threaded executor. However, as Swing predate java executors, it is not
+based on them. However, you can easy to implement one by using a single-threaded executor.</p>
+<h1 id="2-long-running-gui-tasks">2. Long running GUI tasks.</h1>
+<p>Listener of UI events can evoke long-running tasks such as spell checking, background compilation, or fetching remote resources. To avoid
+freezing the app, we need to offload them to background threads.</p>
+<p>Offloading long-running tasks to elastic <code>Executor</code> can be a great choice. Only rarely do GUI applications initiate a large number of
+long-running tasks. Following is an example of how we are going to offload:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>ExecutorService backgroundExec <span style="color:#f92672">=</span> Executors.<span style="color:#a6e22e">newCachedThreadPool</span>();
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>button.<span style="color:#a6e22e">addActionListener</span>(<span style="color:#66d9ef">new</span> ActionListener() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">actionPerformed</span>(ActionEvent e) {
+</span></span><span style="display:flex;"><span>        backgroundExec.<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() { doBigComputation(); }
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>}});
+</span></span></code></pre></div><p>We may need to have some sort of visual feedback indicating when the task completes. For example, we may need to set the label to <code>busy</code>
+before trigger the task and set it back to <code>idle</code> when it is done.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>button.<span style="color:#a6e22e">addActionListener</span>(<span style="color:#66d9ef">new</span> ActionListener() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">actionPerformed</span>(ActionEvent e) {
+</span></span><span style="display:flex;"><span>        button.<span style="color:#a6e22e">setEnabled</span>(<span style="color:#66d9ef">false</span>);
+</span></span><span style="display:flex;"><span>        label.<span style="color:#a6e22e">setText</span>(<span style="color:#e6db74">&#34;busy&#34;</span>);
+</span></span><span style="display:flex;"><span>        backgroundExec.<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                    doBigComputation();
+</span></span><span style="display:flex;"><span>                } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                    GuiExecutor.<span style="color:#a6e22e">instance</span>().<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                            button.<span style="color:#a6e22e">setEnabled</span>(<span style="color:#66d9ef">true</span>);
+</span></span><span style="display:flex;"><span>                            label.<span style="color:#a6e22e">setText</span>(<span style="color:#e6db74">&#34;idle&#34;</span>);
+</span></span><span style="display:flex;"><span>                        }
+</span></span><span style="display:flex;"><span>                    });
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The code starts getting complicated with 3 layers. This sort of &ldquo;thread hopping&rdquo; is typical of handling long‐running tasks in GUI applications.</p>
+<h2 id="21-cancellation">2.1. Cancellation</h2>
+<p>The task may take long so we need to provide the button where users can cancel when they want. <code>Future</code> comes in handy to handle this.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>Future<span style="color:#f92672">&lt;?&gt;</span>  runningTask <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;    <span style="color:#75715e">// thread-confined</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>startButton.<span style="color:#a6e22e">addActionListener</span>(<span style="color:#66d9ef">new</span> ActionListener() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">actionPerformed</span>(ActionEvent e) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (runningTask <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span>) {
+</span></span><span style="display:flex;"><span>           runningTask <span style="color:#f92672">=</span> backgroundExec.<span style="color:#a6e22e">submit</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>              <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                 <span style="color:#66d9ef">while</span> (moreWork()) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> (Thread.<span style="color:#a6e22e">currentThread</span>().<span style="color:#a6e22e">isInterrupted</span>()) {
+</span></span><span style="display:flex;"><span>                       cleanUpPartialWork();
+</span></span><span style="display:flex;"><span>                       <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                    doSomeWork();
+</span></span><span style="display:flex;"><span>                 }
+</span></span><span style="display:flex;"><span>              }
+</span></span><span style="display:flex;"><span>           });
+</span></span><span style="display:flex;"><span>        } 
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cancelButton.<span style="color:#a6e22e">addActionListener</span>(<span style="color:#66d9ef">new</span> ActionListener() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">actionPerformed</span>(ActionEvent event) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (runningTask <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span>)
+</span></span><span style="display:flex;"><span>            runningTask.<span style="color:#a6e22e">cancel</span>(<span style="color:#66d9ef">true</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="22-progress-and-completion-indication">2.2. Progress and Completion indication</h2>
+<p>Upon task completion, we often need to update the UI, for instance, by hiding the cancel button. Manually handling this,
+perhaps in a cleanup method, can lead to poorly structured code where task logic and UI updates are awkwardly mixed.
+Furthermore, reporting progress from the running task presents similar challenges, potentially complicating the code further.</p>
+<p>A common pattern emerges: the core task logic needs to run on a background thread, while completion notifications and progress
+updates must safely interact with the UI thread. This suggests creating an abstract task class. Such a class would require
+developers to implement abstract methods for the background computation, the completion logic, and progress reporting.
+The base class itself would internally manage the necessary thread switching, significantly simplifying the developer&rsquo;s
+code by separating concerns.</p>
+<p>Following is the implementation of the abstract task class:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BackgroundTask</span><span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">implements</span> Runnable, Future<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> FutureTask<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> computation <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Computation();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Computation</span> <span style="color:#66d9ef">extends</span> FutureTask<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">Computation</span>() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">super</span>(<span style="color:#66d9ef">new</span> Callable<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span>() {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">public</span> V <span style="color:#a6e22e">call</span>() <span style="color:#66d9ef">throws</span> Exception {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">return</span> BackgroundTask.<span style="color:#a6e22e">this</span>.<span style="color:#a6e22e">compute</span>() ;
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }); 
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">done</span>() {
+</span></span><span style="display:flex;"><span>            GuiExecutor.<span style="color:#a6e22e">instance</span>().<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() {
+</span></span><span style="display:flex;"><span>                    V value <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>                    Throwable thrown <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">boolean</span> cancelled <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                      value <span style="color:#f92672">=</span> get();
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">catch</span> (ExecutionException e) {
+</span></span><span style="display:flex;"><span>                      thrown <span style="color:#f92672">=</span> e.<span style="color:#a6e22e">getCause</span>();
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">catch</span> (CancellationException e) {
+</span></span><span style="display:flex;"><span>                      cancelled <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">catch</span> (InterruptedException consumed) {
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                      onCompletion(value, thrown, cancelled);
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                } 
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }; 
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setProgress</span>(<span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> current, <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> max) {
+</span></span><span style="display:flex;"><span>        GuiExecutor.<span style="color:#a6e22e">instance</span>().<span style="color:#a6e22e">execute</span>(<span style="color:#66d9ef">new</span> Runnable() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>() { onProgress(current, max); }
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Called in the background thread</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">abstract</span> V <span style="color:#a6e22e">compute</span>()  <span style="color:#66d9ef">throws</span> Exception;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Called in the event thread</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCompletion</span>(V result, Throwable exception,
+</span></span><span style="display:flex;"><span>                                     <span style="color:#66d9ef">boolean</span> cancelled)  { }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">void</span>  <span style="color:#a6e22e">onProgress</span>(<span style="color:#66d9ef">int</span> current, <span style="color:#66d9ef">int</span> max)  { }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Other Future methods forwarded to computation</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Implement your task&rsquo;s core logic within the <code>compute()</code> method. For completion notifications, use <code>onCompletion()</code>, and for
+indicating progress, use <code>onProgress()</code>.</p>
+<p>When this task is scheduled on an Executor, the <code>compute()</code> method is the first to be invoked. The <code>FutureTask</code> class conveniently
+calls its <code>done()</code> method upon the task&rsquo;s completion. This <code>done()</code> method executes on the UI thread, guaranteeing that <code>onCompletion()</code>
+also runs on the UI thread. Similarly, when you update task progress within <code>compute()</code> using <code>setProgress()</code>, the <code>onProgress()</code>
+method is also executed on the UI thread.</p>
+<h1 id="3-shared-data-models">3. Shared data models</h1>
+<h2 id="31-thread-safe-data-models">3.1. Thread-safe data models</h2>
+<p>In the GUI app, it is best to comply to the thread confinement principle. However, in case you need to share model data between
+background and event threads, you can also do so if you make sure that the model is thread safe.</p>
+<h2 id="32-split-data-models">3.2. Split data models</h2>
+<p>As mentioned, the UI views may need to be updated by a shared model used by both event thread and background thread. In this approach,
+ensuring thread-safe often requires the event thread to retrieve the snapshot of the model, which may be inefficient if the data model
+is large of may be frequently updated.</p>
+<p>Another approach is to send incremental changes. Whenever the shared model changes states, it sends only that change to update the view.
+This helps save memory as we only need to send necessary changes to the presentation models.</p>
+<p>In summary, in whatever approach, you need to ensure:</p>
+<ol>
+<li>Thread-safe models.</li>
+<li>The event thread remains responsive.</li>
+<li>Balance between model availability and write performance.</li>
+</ol>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

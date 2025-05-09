@@ -5,9 +5,57 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3d96f7bd-56f9-49eb-925c-b40dbaff762f" name="Changes" comment="feat: add 2.1, 2.2 in blog 5">
-      <change afterPath="$PROJECT_DIR$/static/lock_fairness_comparison.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/11_explicit_lock.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/blog/dev_foundation/concurrency/java_concurrency_in_practice_Brian_Goetz/11_explicit_lock.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/1.-introduction-to-system-scaling/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/1.-introduction-to-system-scaling/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/1.-sharing-objects/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/1.-sharing-objects/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/1.-synchronization/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/1.-synchronization/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/2.-back-of-the-envelope-estimation/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/2.-back-of-the-envelope-estimation/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/2.-composing-objects/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/2.-composing-objects/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/2.-wait-notifyall-notify/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/2.-wait-notifyall-notify/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/3.-a-framework-for-system-design-interviews/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/3.-a-framework-for-system-design-interviews/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/3.-building-blocks/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/3.-building-blocks/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/3.-thread-scheduling/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/3.-thread-scheduling/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/4.-deadlock/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/4.-deadlock/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/4.-design-rate-limiter/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/4.-design-rate-limiter/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/4.-task-execution/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/4.-task-execution/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/404.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/5.-cancellation-and-shutdown/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/5.-cancellation-and-shutdown/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/5.-design-a-key-value-store/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/5.-design-a-key-value-store/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/5.-thread-terminnation/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/5.-thread-terminnation/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/6.-consistent-hashing/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/6.-consistent-hashing/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/6.-thread-pools/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/6.-thread-pools/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/6.-visibility/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/6.-visibility/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/7.-thread-management/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/7.-thread-management/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/8.-threads-and-exceptions/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/8.-threads-and-exceptions/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/9.-threadlocal-type/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/9.-threadlocal-type/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/bear/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/bear/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_concurrency_in_practice_brian_goetz/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_programming_language__ken_arnold/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_programming_language__ken_arnold/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_programming_language__ken_arnold/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/concurrency/java_programming_language__ken_arnold/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/gradle/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/gradle/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/gradle/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/gradle/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/alexu_sdi_vol_1/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/alexu_sdi_vol_1/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/alexu_sdi_vol_1/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/alexu_sdi_vol_1/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/dev_foundation/system_design/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/markdown/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/markdown/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/markdown/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/markdown/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/syntax/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/syntax/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blog/syntax/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/blog/syntax/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/hugo/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/hugo/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/my-new-post/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/my-new-post/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/robots.txt" beforeDir="false" afterPath="$PROJECT_DIR$/public/robots.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/sitemap.xml" beforeDir="false" afterPath="$PROJECT_DIR$/public/sitemap.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

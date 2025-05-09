@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-US">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
   <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
 <title>6. Thread pools | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
 <meta name="title" content="6. Thread pools" />
 <meta name="description" content="1. Implicit couplings between tasks and execution policies.
@@ -27,7 +27,7 @@ These reasons explain that thread pools work best when tasks are homogeneous and
 <meta name="keywords" content="markdown,syntax," />
 
 
-<meta property="og:url" content="http://localhost:1313/6.-thread-pools/">
+<meta property="og:url" content="http://localhost:1313/my_site/6.-thread-pools/">
   <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
   <meta property="og:title" content="6. Thread pools">
   <meta property="og:description" content="1. Implicit couplings between tasks and execution policies. While the Executors offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible with all execution policies, these tasks include:
@@ -39,13 +39,13 @@ Dependent tasks: Tasks that depend on the timing, results, or side effects of ot
     <meta property="article:modified_time" content="2025-04-11T00:00:00+00:00">
     <meta property="article:tag" content="Markdown">
     <meta property="article:tag" content="Syntax">
-    <meta property="og:image" content="http://localhost:1313/images/share.png">
+    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
 
 
 
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
   <meta name="twitter:title" content="6. Thread pools">
   <meta name="twitter:description" content="1. Implicit couplings between tasks and execution policies. While the Executors offers the substantial flexibility in specifying and modifying execution policies. Not all tasks are compatible with all execution policies, these tasks include:
 Dependent tasks: Tasks that depend on the timing, results, or side effects of other tasks. When you submit such tasks, you implicitly create constraints on the execution policy that must be carefully managed to avoid thread starvation problem where the thread may wait a condition that never is fulfilled. (more on this is discussed in 1.1). Tasks that exploit thread confinement: Tasks use thread confinement technique may suit with single-threaded executor rather than multithreaded one. Response-time sensitive tasks: It is troublesome for letting user wait the response after clicking button. Putting such tasks into executor with full of long-running tasks often are not suitable. Tasks that use ThreadLocal: states in ThreadLocal can be shared between thread. If you want to submit that task in the executor, you must ensure the thread has the life span longer the given tasks. Be aware because most executors may interrupt a current thread and use another thread to serve your task. These reasons explain that thread pools work best when tasks are homogeneous and independent.">
@@ -59,7 +59,7 @@ Dependent tasks: Tasks that depend on the timing, results, or side effects of ot
   <meta itemprop="datePublished" content="2025-04-11T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-04-11T00:00:00+00:00">
   <meta itemprop="wordCount" content="1600">
-  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -240,17 +240,17 @@ Dependent tasks: Tasks that depend on the timing, results, or side effects of ot
 </head>
 
 <body>
-  <header><a href="/" class="title">
+  <header><a href="/my_site/" class="title">
   <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
 </a>
-<nav><a href="/">Home</a>
+<nav><a href="/my_site/">Home</a>
 
-<a href="/bear/">Bear</a>
+<a href="/my_site/bear/">Bear</a>
 
-<a href="/hugo/">Hugo</a>
+<a href="/my_site/hugo/">Hugo</a>
 
 
-<a href="/blog">Blog</a>
+<a href="/my_site/blog">Blog</a>
 
 </nav>
 </header>
@@ -310,7 +310,7 @@ technique) because most threads will not be schedulable at all times.</p>
 obtained through pro‐filing or instrumentation. Alternatively, you can benchmark different pool sizes under heavy loads and observe the
 level of CPU utilization to choose the appropriate size.</p>
 <p>Given these definitions, following is the formula:</p>
-<p><img src="/pool_size_formula.png" alt="img"></p>
+<p><img src="/my_site/pool_size_formula.png" alt="img"></p>
 <p>As mentioned other resources also a factor determining your pool size, like JDBC connections. Although, these are easier to estimate the correct
 pool size, just get the total of resources divided by the number of resources need per task.</p>
 <h1 id="3-configuring-threadpoolexecutor">3. Configuring <code>ThreadPoolExecutor</code></h1>
@@ -425,9 +425,9 @@ ensuring no threads remain active or &rsquo;leak'.</li>
 </content>
 <p>
   
-  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
   
-  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
   
 </p>
 

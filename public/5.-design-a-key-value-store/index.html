@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-US">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
   <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
 <title>5. Design a key-value store | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
 <meta name="title" content="5. Design a key-value store" />
 <meta name="description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
@@ -26,7 +26,7 @@ Designing the database which is hosted on one server is easy, but it is very qui
 <meta name="keywords" content="markdown,syntax," />
 
 
-<meta property="og:url" content="http://localhost:1313/5.-design-a-key-value-store/">
+<meta property="og:url" content="http://localhost:1313/my_site/5.-design-a-key-value-store/">
   <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
   <meta property="og:title" content="5. Design a key-value store">
   <meta property="og:description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
@@ -41,13 +41,13 @@ The size of a key-value pair is small: less than 10 KB. Ability to store big dat
     <meta property="article:modified_time" content="2025-03-28T00:00:00+00:00">
     <meta property="article:tag" content="Markdown">
     <meta property="article:tag" content="Syntax">
-    <meta property="og:image" content="http://localhost:1313/images/share.png">
+    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
 
 
 
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
   <meta name="twitter:title" content="5. Design a key-value store">
   <meta name="twitter:description" content="A key-value store is a non-relational database. Each unique identifier is stored as a key with its associated value.
 The key must be unique, either is a plaint text or hashed value. For performance reasons, a short key works better.
@@ -66,8 +66,8 @@ In this article, we will try to design:
 The size of a key-value pair is small: less than 10 KB. Ability to store big data. High availability: The system responds quickly, even during failures. High scalability: The system can be scaled to support large data set. Automatic scaling: The addition/deletion of servers should be automatic based on traffic. Tunable consistency. Low latency. Single server key-value store Designing the database which is hosted on one server is easy, but it is very quick to run out of memory. Possible solutions:">
   <meta itemprop="datePublished" content="2025-03-28T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-28T00:00:00+00:00">
-  <meta itemprop="wordCount" content="400">
-  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="wordCount" content="794">
+  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -248,17 +248,17 @@ The size of a key-value pair is small: less than 10 KB. Ability to store big dat
 </head>
 
 <body>
-  <header><a href="/" class="title">
+  <header><a href="/my_site/" class="title">
   <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
 </a>
-<nav><a href="/">Home</a>
+<nav><a href="/my_site/">Home</a>
 
-<a href="/bear/">Bear</a>
+<a href="/my_site/bear/">Bear</a>
 
-<a href="/hugo/">Hugo</a>
+<a href="/my_site/hugo/">Hugo</a>
 
 
-<a href="/blog">Blog</a>
+<a href="/my_site/blog">Blog</a>
 
 </nav>
 </header>
@@ -306,7 +306,7 @@ guarantees: consistency, availability, and partition tolerance.</p>
 <p>Because in the real work, network failures always occur, thus the system that sacrifice this characteristic is impossible. Therefore, you
 must either choose only consistency and availability.</p>
 <p>For example, the following img illustrates the system with 3 nodes, and one node <code>n3</code> is going down.</p>
-<p><img src="/cao.png" alt="img"></p>
+<p><img src="/my_site/cao.png" alt="img"></p>
 <p>In this case, if you choose consistency (like financial system which emphasizes the importance of seeing latest balance). When latest
 balance is written to <code>n3</code> but fails to propagate to other nodes before terminating, we can&rsquo;t write and read in other nodes, thereby
 informing the service downtime and sacrificing availability.</p>
@@ -314,13 +314,44 @@ informing the service downtime and sacrificing availability.</p>
 returning stale or incorrect data. Writing operations would be reconciled later to achieve the correct state of the system.</p>
 <p>You should discuss with the interviewer about what characteristic you should preserve.</p>
 <h2 id="system-components">System components</h2>
+<h1 id="handling-failures">Handling failures</h1>
+<h2 id="failure-detection">Failure detection</h2>
+<p>To know a node is down in a distributed system, several approaches are adopted. The obvious one may be:</p>
+<ol>
+<li><strong>Using a monitoring node</strong>: This node checks all worker nodes periodically to know whether they are down. However, this approach can lead to single
+point of failure.</li>
+<li><strong>Multicast approach</strong>: Each node periodically sends <code>n-1</code> requests to the remaining servers. No single point of failure, but can lead to performance issue and
+high network load.</li>
+</ol>
+<p>Based on the idea of multicast approach, we can realize that there is no need for each node to check all the remaining nodes. Instead, when a node has the
+downtime information of a set of nodes in the cluster, another node can lend this information when communicating that node. This is what called gossip protocol.</p>
+<p>Gossip protocol offers several benefits:</p>
+<ol>
+<li><strong>Reduced network load, high throughput</strong>.</li>
+<li><strong>More reliable</strong>: For example, in multicast approach, a node may have network error with a particular node, this can lead to a false belief that that node has gone down
+while it actually haven&rsquo;t. However, in gossip approach, we can know the availability information of a node through other paths.</li>
+</ol>
+<h2 id="handling-temporary-failures">Handling temporary failures</h2>
+<p>When a node goes down, our consensus mechanism based on read and write quora may be blocked, as we don&rsquo;t have enough nodes to acknowledge.</p>
+<p>In this case, we can find a random healthy node to handle the acknowledgement. This node of course only handle the new writes and isn&rsquo;t replicated with history data.
+Therefore, we need as fast as possible recover with a new instance if it is a permanent failure to ensure the configured replicating factors
+, which guarantees fault tolerance, availability, and reliability of the system.</p>
+<p>That&rsquo;s where anti-entropy approach comes in play. This approach uses Merkle tree to efficiently synchronize data on current alive replicas and roll up a new, up-to-date
+replica to ensure replicating factor. Merkle tree allows you to detect the exact part of data in replicas that needs to synchronize, reducing network load and latency.</p>
+<h2 id="handling-data-center-outage">Handling data center outage.</h2>
+<p>It is important to store replicas across multiple data centers to minimize the risk of data loss and reduced availability.</p>
+<h1 id="read-and-write-path-of-cassandra">Read and write path of Cassandra.</h1>
+<ol>
+<li>LSM-tree (Log-Structured Merge-Tree) as a data structure of the database.</li>
+<li>The use of Bloom filter to detect if the data exists in SSTable, avoiding disk reads.</li>
+</ol>
 
 </content>
 <p>
   
-  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
   
-  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
   
 </p>
 

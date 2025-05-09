@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
+<title>9. Explicit lock | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="9. Explicit lock" />
+<meta name="description" content="1. Lock and Reentrantlock.
+ReentrantLock allows you put timeout on lock acquisition, offering greater thread liveness.
+It also offers more flexible locking mechanism, where you can expand lock section across methods.
+Following is the code example:
+
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+
+Lock lock = new ReentrantLock();
+...
+lock.lock();
+try {
+    // update object state
+    // catch exceptions and restore invariants if necessary
+} finally {
+    lock.unlock();
+}
+
+
+You would need to lock and unlock when you enter and exit the race condition code. Users of this lock
+must be wary about unlock() calls, because minor mistakes can cause code path never call unlock(),
+leaving the system hanging." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/my_site/9.-explicit-lock/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="9. Explicit lock">
+  <meta property="og:description" content="1. Lock and Reentrantlock. ReentrantLock allows you put timeout on lock acquisition, offering greater thread liveness.
+It also offers more flexible locking mechanism, where you can expand lock section across methods.
+Following is the code example:
+1 2 3 4 5 6 7 8 9 Lock lock = new ReentrantLock(); ... lock.lock(); try { // update object state // catch exceptions and restore invariants if necessary } finally { lock.unlock(); } You would need to lock and unlock when you enter and exit the race condition code. Users of this lock must be wary about unlock() calls, because minor mistakes can cause code path never call unlock(), leaving the system hanging.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-04-30T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-04-30T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
+  <meta name="twitter:title" content="9. Explicit lock">
+  <meta name="twitter:description" content="1. Lock and Reentrantlock. ReentrantLock allows you put timeout on lock acquisition, offering greater thread liveness.
+It also offers more flexible locking mechanism, where you can expand lock section across methods.
+Following is the code example:
+1 2 3 4 5 6 7 8 9 Lock lock = new ReentrantLock(); ... lock.lock(); try { // update object state // catch exceptions and restore invariants if necessary } finally { lock.unlock(); } You would need to lock and unlock when you enter and exit the race condition code. Users of this lock must be wary about unlock() calls, because minor mistakes can cause code path never call unlock(), leaving the system hanging.">
+
+
+
+
+  <meta itemprop="name" content="9. Explicit lock">
+  <meta itemprop="description" content="1. Lock and Reentrantlock. ReentrantLock allows you put timeout on lock acquisition, offering greater thread liveness.
+It also offers more flexible locking mechanism, where you can expand lock section across methods.
+Following is the code example:
+1 2 3 4 5 6 7 8 9 Lock lock = new ReentrantLock(); ... lock.lock(); try { // update object state // catch exceptions and restore invariants if necessary } finally { lock.unlock(); } You would need to lock and unlock when you enter and exit the race condition code. Users of this lock must be wary about unlock() calls, because minor mistakes can cause code path never call unlock(), leaving the system hanging.">
+  <meta itemprop="datePublished" content="2025-04-30T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-30T00:00:00+00:00">
+  <meta itemprop="wordCount" content="927">
+  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/my_site/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/my_site/">Home</a>
+
+<a href="/my_site/bear/">Bear</a>
+
+<a href="/my_site/hugo/">Hugo</a>
+
+
+<a href="/my_site/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>9. Explicit lock</h1>
+<p>
+  <i>
+    <time datetime='2025-04-30' pubdate>
+      30 Apr, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="1-lock-and-reentrantlock">1. Lock and Reentrantlock.</h1>
+<p><code>ReentrantLock</code> allows you put timeout on lock acquisition, offering greater thread liveness.</p>
+<p>It also offers more flexible locking mechanism, where you can expand lock section across methods.</p>
+<p>Following is the code example:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>Lock lock <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ReentrantLock();
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>lock.<span style="color:#a6e22e">lock</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// update object state</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// catch exceptions and restore invariants if necessary</span>
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>    lock.<span style="color:#a6e22e">unlock</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>You would need to lock and unlock when you enter and exit the race condition code. Users of this lock
+must be wary about <code>unlock()</code> calls, because minor mistakes can cause code path never call <code>unlock()</code>,
+leaving the system hanging.</p>
+<h2 id="11-polled-and-timed-lock-acquisition">1.1. Polled and timed lock acquisition.</h2>
+<p>Intrinsic locks offer no built-in mechanisms to recover from locking hazards. Once a lock ordering issue arises,
+the only resolution is typically a system restart.</p>
+<p>In contrast, explicit locks provide several recovery strategies. One such method is polling with <code>tryLock()</code>. This allows a thread to
+attempt acquiring a lock and return immediately if unsuccessful. Upon failure, the thread can then retry the acquisition or perform alternative actions like logging.</p>
+<p>Consider the classic money transfer problem, where lock ordering can lead to deadlocks depending on the order in which accounts are given. Using the polling approach,
+if a deadlock occurs (indicated by a failure to acquire the final lock), the threads can back off and retry acquiring the locks after
+a random delay, as illustrated:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">transferMoney</span>(Account fromAcct, Account toAcct, DollarAmount amount, <span style="color:#66d9ef">long</span> timeout, TimeUnit unit)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throws</span> InsufficientFundsException, InterruptedException {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> fixedDelay <span style="color:#f92672">=</span> getFixedDelayComponentNanos(timeout, unit);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> randMod <span style="color:#f92672">=</span> getRandomDelayModulusNanos(timeout, unit);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">long</span> stopTime <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">nanoTime</span>() <span style="color:#f92672">+</span> unit.<span style="color:#a6e22e">toNanos</span>(timeout);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (fromAcct.<span style="color:#a6e22e">lock</span>.<span style="color:#a6e22e">tryLock</span>()) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (toAcct.<span style="color:#a6e22e">lock</span>.<span style="color:#a6e22e">tryLock</span>()) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">if</span> (fromAcct.<span style="color:#a6e22e">getBalance</span>().<span style="color:#a6e22e">compareTo</span>(amount)
+</span></span><span style="display:flex;"><span>                                <span style="color:#f92672">&lt;</span> 0)
+</span></span><span style="display:flex;"><span>                            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> InsufficientFundsException();
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                            fromAcct.<span style="color:#a6e22e">debit</span>(amount);
+</span></span><span style="display:flex;"><span>                            toAcct.<span style="color:#a6e22e">credit</span>(amount);
+</span></span><span style="display:flex;"><span>                            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>;
+</span></span><span style="display:flex;"><span>                        }
+</span></span><span style="display:flex;"><span>                    } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                        toAcct.<span style="color:#a6e22e">lock</span>.<span style="color:#a6e22e">unlock</span>();
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>                fromAcct.<span style="color:#a6e22e">lock</span>.<span style="color:#a6e22e">unlock</span>();
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (System.<span style="color:#a6e22e">nanoTime</span>() <span style="color:#f92672">&lt;</span> stopTime)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>;
+</span></span><span style="display:flex;"><span>        NANOSECONDS.<span style="color:#a6e22e">sleep</span>(fixedDelay <span style="color:#f92672">+</span> rnd.<span style="color:#a6e22e">nextLong</span>() <span style="color:#f92672">%</span> randMod);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="12-interruptible-lock-acquisition">1.2. Interruptible lock acquisition</h2>
+<p>Another advanced acquisition of an explicit lock is <code>ReentrantLock.lockInterruptibly()</code> which allows the thread waiting on lock being cancelled. You can use this
+method in case it is not necessary for the thread to do further operation once it gets cancelled.</p>
+<h1 id="2-performance-considerations">2. Performance considerations</h1>
+<p>Resources expended on lock management and scheduling can be costly which can contend the computing resources of the application. A good locking mechanism is the one:</p>
+<ul>
+<li><strong>Makes fewer system calls</strong>: Lock mechanism when under high level of contention often resorts to system calls, especially when it needs to put the waiting thread into
+the waiting state. System calls are notoriously expensive due to the act of context switching, data marshaling from kernel to app memory space,
+cache validation and i/o flushes, ect.  whereas a simple user-space operation might be nanoseconds.</li>
+<li><strong>Forces fewer context switches</strong>: When a thread goes to waiting state, it lets another thread take turn to be executed, leading to thread switching. Besides, releasing
+lock often requires the OS to decide which threads to be awakened and run next, potentially cause context switching. Avoid context switching can significantly improve
+application throughput.</li>
+<li><strong>Initiates less memory-synchronization traffic on the shared memory bus</strong>: As previously discussed, besides thread synchronization, locking mechanisms also
+ensure memory visibility between threads. This means that changes made by one thread to shared memory must be visible to other threads. This often requires the
+CPU executing a thread to copy its data to a shared memory bus so that other CPUs executing different threads can read it. A good locking mechanism minimizes
+the amount of data transferred.</li>
+<li>Do fewer operations that are time-consuming: Various operations locking mechanism can introduce overhead if not implemented effectively. For instances, queuing
+waiting threads needs dequeue and enqueue, involving data structure manipulations that need to be synchronized themselves. Ensuring fairness locking can further
+complicate this process. Also, special locking methods like <code>lockInterruptibly()</code>, <code>tryLock(time, unit)</code> can introduce slight overhead compared to a normal locking method as they require the OS
+to check the interruption flag or manage timeout condition.</li>
+</ul>
+<p>Intrinsic lock in Java 5.0 performs much less efficient then <code>ReentrantLock</code>. However, this gap is narrow down since Java 6.0.</p>
+<p>It is worth to refer or perform a benchmark if you are in question about a lock mechanism performance.</p>
+<h2 id="3-fairness">3. Fairness</h2>
+<p>A common tendency among developers is to advocate for fairness in lock acquisition, aiming to prevent new threads from &ldquo;barging in&rdquo; and causing thread starvation.
+However, non-fair mechanisms offer their own advantages:</p>
+<ol>
+<li>They minimize thread switching.</li>
+<li>Often, a time gap exists between calling resume on a thread and its actual awakening. A thread that &ldquo;barges in&rdquo; might complete its execution before the resumed thread even starts.
+In such cases, everyone benefits.</li>
+</ol>
+<p>Therefore, fairness typically performs best when tasks are long-running or lock acquisition times are significant.</p>
+<p>You can enable the fairness feature in explicit locks by setting a flag to <code>true</code> in the <code>ReentrantLock</code> constructor: <code>ReentrantLock(true)</code>.</p>
+<p>In most common scenarios, non-fair lock acquisition is often preferable to fair acquisition. It is generally recommended to use fair mechanisms only when a
+specific fairness requirement exists.</p>
+<p>The following graph compares program throughput when wrapping fair and unfair locks around <code>HashMap</code>. <code>ConcurrentHashMap</code>, which employs a more advanced locking
+mechanism called <em>stripping lock</em>, is also illustrated in the graph:
+<img src="/my_site/lock_fairness_comparison.png" alt="img"></p>
+<p>Intrinsic lock doesn&rsquo;t offer fair lock acquisition mechanism. However, it is good enough for most situations.</p>
+<h2 id="4-choosing-between-synchronized-and-reentrantlock">4. Choosing Between Synchronized and ReentrantLock</h2>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

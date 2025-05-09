@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-US">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
   <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="http://localhost:1313/images/favicon.png" />
+<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
 <title>6. Consistent hashing | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
 <meta name="title" content="6. Consistent hashing" />
 <meta name="description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers.
@@ -16,7 +16,7 @@ you need to move significant amount of data to match with the current hash funct
 <meta name="keywords" content="markdown,syntax," />
 
 
-<meta property="og:url" content="http://localhost:1313/6.-consistent-hashing/">
+<meta property="og:url" content="http://localhost:1313/my_site/6.-consistent-hashing/">
   <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
   <meta property="og:title" content="6. Consistent hashing">
   <meta property="og:description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers. Consistent hashing is a commonly used technique to achieve this goal.
@@ -28,13 +28,13 @@ you need to move significant amount of data to match with the current hash funct
     <meta property="article:modified_time" content="2025-04-10T00:00:00+00:00">
     <meta property="article:tag" content="Markdown">
     <meta property="article:tag" content="Syntax">
-    <meta property="og:image" content="http://localhost:1313/images/share.png">
+    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
 
 
 
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="http://localhost:1313/images/share.png">
+  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
   <meta name="twitter:title" content="6. Consistent hashing">
   <meta name="twitter:description" content="To achieve horizontal scaling, it is important to distribute requests/data efficiently and evenly across servers. Consistent hashing is a commonly used technique to achieve this goal.
 1. The rehashing problem Using modular hashing function to distribute requests to multiple nodes has an issue that, when you scale servers up or down, you need to move significant amount of data to match with the current hash function, if the node that is affected is storing such huge data.">
@@ -48,7 +48,7 @@ you need to move significant amount of data to match with the current hash funct
   <meta itemprop="datePublished" content="2025-04-10T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-04-10T00:00:00+00:00">
   <meta itemprop="wordCount" content="491">
-  <meta itemprop="image" content="http://localhost:1313/images/share.png">
+  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
   <meta itemprop="keywords" content="Markdown,Syntax">
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -229,17 +229,17 @@ you need to move significant amount of data to match with the current hash funct
 </head>
 
 <body>
-  <header><a href="/" class="title">
+  <header><a href="/my_site/" class="title">
   <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
 </a>
-<nav><a href="/">Home</a>
+<nav><a href="/my_site/">Home</a>
 
-<a href="/bear/">Bear</a>
+<a href="/my_site/bear/">Bear</a>
 
-<a href="/hugo/">Hugo</a>
+<a href="/my_site/hugo/">Hugo</a>
 
 
-<a href="/blog">Blog</a>
+<a href="/my_site/blog">Blog</a>
 
 </nav>
 </header>
@@ -267,14 +267,14 @@ of data can result in the storm of cache misses.</p>
 the number of current services. This is done by using a concept of ring.</p>
 <p>Suppose that we have a hash function that when input with a key will produce a number from <code>x_0</code>, <code>x_1</code>, &hellip; to <code>x_n</code>. These values are distributed
 evenly on following ring.</p>
-<p><img src="/ring.png" alt="img"></p>
+<p><img src="/my_site/ring.png" alt="img"></p>
 <p>Using the hash function, we can map servers based on server IP or name onto the ring.</p>
-<p><img src="/servers_on_ring.png" alt="img"></p>
+<p><img src="/my_site/servers_on_ring.png" alt="img"></p>
 <p>Keys are also input to produce values placed on these rings.</p>
-<p><img src="/complete_ring.png" alt="img"></p>
+<p><img src="/my_site/complete_ring.png" alt="img"></p>
 <p>To determine which server a key will be stored, we first start from position of the key and go clockwise until we meet
 the first server. Like following img.</p>
-<p><img src="/map_key_ring.png" alt="img"></p>
+<p><img src="/my_site/map_key_ring.png" alt="img"></p>
 <p>As you can image, when adding a new server, that server may be somewhere on the ring. Only portion of keys that is being on the
 server next to the new server we placed, more specifically the ones behind the new server, will be redistributed. Similarly, removing
 a server is done with the same process.</p>
@@ -287,7 +287,7 @@ If these issues happen, we end up returning back to the rehashing problem.</li>
 </ol>
 <p>We can use a technique called <strong>virtual nodes</strong> which allows us to represent a server with several virtual nodes, instead
 of 1 node. Like following image, each server has 3 nodes.</p>
-<p><img src="/virtual_node_ring.png" alt="img"></p>
+<p><img src="/my_site/virtual_node_ring.png" alt="img"></p>
 <p>The process of choosing where to store a key is the same. The only difference is that as you add more virtual nodes for each server
 , the distribution of keys becomes more balanced. This is because the standard deviation gets smaller with
 more virtual nodes, leading to balanced data distribution. Research has experienced with the algorithm and
@@ -297,9 +297,9 @@ nodes added, the more memory is used. Therefore, tuning to choose the one that f
 </content>
 <p>
   
-  <a href="http://localhost:1313/blog/markdown/">#Markdown</a>
+  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
   
-  <a href="http://localhost:1313/blog/syntax/">#Syntax</a>
+  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
   
 </p>
 

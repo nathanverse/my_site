@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/my_site/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=my_site/livereload" data-no-instant defer></script>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="http://localhost:1313/my_site/images/favicon.png" />
+<title>8. Avoid liveness hazard | Hugo ʕ•ᴥ•ʔ Bear Blog</title>
+<meta name="title" content="8. Avoid liveness hazard" />
+<meta name="description" content="1. Deadlock
+Deadlock can happen when threads get to wait resources held by each other. For example, in dining philosophers problem, deadlock can occur
+when all philosophers simultaneously pick their left chopstick and wait the right stick held by the philosopher right next to them.
+Thinking of waiting resource held by another thread as a relationship in a directed graph. Whenever there is a cycle, there are chances
+deadlock can happen." />
+<meta name="keywords" content="markdown,syntax," />
+
+
+<meta property="og:url" content="http://localhost:1313/my_site/8.-avoid-liveness-hazard/">
+  <meta property="og:site_name" content="Hugo ʕ•ᴥ•ʔ Bear Blog">
+  <meta property="og:title" content="8. Avoid liveness hazard">
+  <meta property="og:description" content="1. Deadlock Deadlock can happen when threads get to wait resources held by each other. For example, in dining philosophers problem, deadlock can occur when all philosophers simultaneously pick their left chopstick and wait the right stick held by the philosopher right next to them.
+Thinking of waiting resource held by another thread as a relationship in a directed graph. Whenever there is a cycle, there are chances deadlock can happen.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-04-29T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-04-29T00:00:00+00:00">
+    <meta property="article:tag" content="Markdown">
+    <meta property="article:tag" content="Syntax">
+    <meta property="og:image" content="http://localhost:1313/my_site/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/my_site/images/share.png">
+  <meta name="twitter:title" content="8. Avoid liveness hazard">
+  <meta name="twitter:description" content="1. Deadlock Deadlock can happen when threads get to wait resources held by each other. For example, in dining philosophers problem, deadlock can occur when all philosophers simultaneously pick their left chopstick and wait the right stick held by the philosopher right next to them.
+Thinking of waiting resource held by another thread as a relationship in a directed graph. Whenever there is a cycle, there are chances deadlock can happen.">
+
+
+
+
+  <meta itemprop="name" content="8. Avoid liveness hazard">
+  <meta itemprop="description" content="1. Deadlock Deadlock can happen when threads get to wait resources held by each other. For example, in dining philosophers problem, deadlock can occur when all philosophers simultaneously pick their left chopstick and wait the right stick held by the philosopher right next to them.
+Thinking of waiting resource held by another thread as a relationship in a directed graph. Whenever there is a cycle, there are chances deadlock can happen.">
+  <meta itemprop="datePublished" content="2025-04-29T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-29T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1709">
+  <meta itemprop="image" content="http://localhost:1313/my_site/images/share.png">
+  <meta itemprop="keywords" content="Markdown,Syntax">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: Verdana, sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+     
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    padding: 2px 5px;
+    background-color: #f2f2f2;
+  }
+
+  pre code {
+    color: #222;
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+
+  div.highlight pre {
+    background-color: initial;
+    color: initial;
+  }
+
+  div.highlight code {
+    background-color: unset;
+    color: unset;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #777;
+    }
+
+    pre code {
+      color: #ddd;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="/my_site/" class="title">
+  <h2>Hugo ʕ•ᴥ•ʔ Bear Blog</h2>
+</a>
+<nav><a href="/my_site/">Home</a>
+
+<a href="/my_site/bear/">Bear</a>
+
+<a href="/my_site/hugo/">Hugo</a>
+
+
+<a href="/my_site/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>8. Avoid liveness hazard</h1>
+<p>
+  <i>
+    <time datetime='2025-04-29' pubdate>
+      29 Apr, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="1-deadlock">1. Deadlock</h1>
+<p>Deadlock can happen when threads get to wait resources held by each other. For example, in <em>dining philosophers</em> problem, deadlock can occur
+when all philosophers simultaneously pick their left chopstick and wait the right stick held by the philosopher right next to them.</p>
+<p>Thinking of <em>waiting resource held by another thread</em> as a relationship in a directed graph. Whenever there is a cycle, there are chances
+deadlock can happen.</p>
+<p>In the database system, there is mechanism to resolve deadlocks made by transactions by searching that graph and aborting the thread that
+is waiting for a long time, allowing other threads to proceed. The aborted transaction can be retried later.</p>
+<p>JVM doesn&rsquo;t support resolving deadlocks, so we need to be mindful.</p>
+<p>Deadlock can be hard to detect, as it may only happen when the system is under heavy load.</p>
+<h2 id="11-lock-ordering-deadlocks">1.1. Lock-ordering deadlocks.</h2>
+<p>Given the following code:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// Warning: deadlock-prone!</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LeftRightDeadlock</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Object left <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Object();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Object right <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Object();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">leftRight</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (left) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">synchronized</span> (right) {
+</span></span><span style="display:flex;"><span>                doSomething();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            } 
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">rightLeft</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (right) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">synchronized</span> (left) {
+</span></span><span style="display:flex;"><span>                doSomethingElse();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            } 
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Two threads each call <code>leftRight</code> and <code>rightLeft</code> methods simultaneously may experience deadlock as there is cyclic locking dependency.
+If you ensure locks are acquired in the same order, for example, from right -&gt; left, then there wouldn&rsquo;t be deadlock. Therefore,
+lock ordering matters when write a deadlock-free code.</p>
+<h2 id="12-dynamic-lock-order-deadlocks">1.2. Dynamic lock order deadlocks</h2>
+<p>You should be wary that lock order may appear dynamically, like following example:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">transferMoney</span>(Account fromAccount, Account toAccount, DollarAmount amount) <span style="color:#66d9ef">throws</span> InsufficientFundsException {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">synchronized</span> (fromAccount) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (toAccount) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (fromAccount.<span style="color:#a6e22e">getBalance</span>().<span style="color:#a6e22e">compareTo</span>(amount) <span style="color:#f92672">&lt;</span> 0)
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> InsufficientFundsException();
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                fromAccount.<span style="color:#a6e22e">debit</span>(amount);
+</span></span><span style="display:flex;"><span>                toAccount.<span style="color:#a6e22e">credit</span>(amount);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            } 
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>As you can see, lock ordering depends on the order of arguments. In case two transactions send concurrently with two account objects input
+with opposite orders, deadlock can definitely happen.</p>
+<p>One way to address this is to use hash value of the object from <code>Object.hashCode</code>. You can compare <code>fromAccount</code> and <code>toAccount</code> hash code
+and order the lock acquisition in an ascending or descending order.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Object tieLock <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Object();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">transferMoney</span>(<span style="color:#66d9ef">final</span> Account fromAcct,
+</span></span><span style="display:flex;"><span>                          <span style="color:#66d9ef">final</span> Account toAcct,
+</span></span><span style="display:flex;"><span>                          <span style="color:#66d9ef">final</span> DollarAmount amount)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throws</span> InsufficientFundsException {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Helper</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">transfer</span>() <span style="color:#66d9ef">throws</span> InsufficientFundsException {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (fromAcct.<span style="color:#a6e22e">getBalance</span>().<span style="color:#a6e22e">compareTo</span>(amount) <span style="color:#f92672">&lt;</span> 0)
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> InsufficientFundsException();
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                fromAcct.<span style="color:#a6e22e">debit</span>(amount);
+</span></span><span style="display:flex;"><span>                toAcct.<span style="color:#a6e22e">credit</span>(amount);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> fromHash <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">identityHashCode</span>(fromAcct);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> toHash <span style="color:#f92672">=</span> System.<span style="color:#a6e22e">identityHashCode</span>(toAcct);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (fromHash <span style="color:#f92672">&lt;</span> toHash) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (fromAcct) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">synchronized</span> (toAcct) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">new</span> Helper().<span style="color:#a6e22e">transfer</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (fromHash <span style="color:#f92672">&gt;</span> toHash) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (toAcct) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">synchronized</span> (fromAcct) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">new</span> Helper().<span style="color:#a6e22e">transfer</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (tieLock) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">synchronized</span> (fromAcct) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">synchronized</span> (toAcct) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">new</span> Helper().<span style="color:#a6e22e">transfer</span>();
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>However, there is case two different objects returning a same hash value. In such case, you can add a <code>tieLock</code> to ensure only one
+thread does a risky action of acquiring randomly ordering locks. This approach may imply a performance suffering; however, given
+a small chance of this path, it is acceptable.</p>
+<p>In case an object has a unique, immutable, and comparable key, you can get to use it instead of hash value. You also don&rsquo;t need to use <code>tieLock</code>
+in this case.</p>
+<h2 id="13-deadlocks-between-cooperating-objects">1.3. Deadlocks between cooperating objects.</h2>
+<p>Deadlocks are not always easily noticeable like two above examples, especially when the deadlock occurs in two different classes. Following
+is an example</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// Warning: deadlock-prone!</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Taxi</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> Point location, destination;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Dispatcher dispatcher;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">Taxi</span>(Dispatcher dispatcher) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dispatcher</span> <span style="color:#f92672">=</span> dispatcher;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> Point <span style="color:#a6e22e">getLocation</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> location;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setLocation</span>(Point location) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">location</span> <span style="color:#f92672">=</span> location;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (location.<span style="color:#a6e22e">equals</span>(destination))
+</span></span><span style="display:flex;"><span>            dispatcher.<span style="color:#a6e22e">notifyAvailable</span>(<span style="color:#66d9ef">this</span>);
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Dispatcher</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Set<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span> taxis;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Set<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span> availableTaxis;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">Dispatcher</span>() {
+</span></span><span style="display:flex;"><span>        taxis <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HashSet<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>        availableTaxis <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HashSet<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">notifyAvailable</span>(Taxi taxi) {
+</span></span><span style="display:flex;"><span>        availableTaxis.<span style="color:#a6e22e">add</span>(taxi);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> Image <span style="color:#a6e22e">getImage</span>() {
+</span></span><span style="display:flex;"><span>        Image image <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Image();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (Taxi t : taxis)
+</span></span><span style="display:flex;"><span>            image.<span style="color:#a6e22e">drawMarker</span>(t.<span style="color:#a6e22e">getLocation</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> image;
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>Taxi</code> object stores its realtime location, and the destination it is heading towards, which get updated continually by GPS service. Meanwhile,
+<code>Dispatcher</code> is like a taxi management object, it stores taxis, knows which taxis are being available through <code>notifyAvailable()</code> reported
+by each taxi, and can render an image illustrating the current locations of all its taxis.</p>
+<p>Deadlock can happen on the above code, when GPS service <code>setLocation</code> for a taxi, and the <code>Dispatcher</code> is asking to <code>getImage()</code>. This issue
+in code is hard to detect, because <code>Taxi</code> instance call an alien method (in this case <code>Dispatcher.getImage</code>) while holding a lock on itself.
+This type of call is called a close call.</p>
+<h2 id="14-open-call">1.4. Open call</h2>
+<p>The close call can cause lock ordering if the callee class, in turn, depends on the caller class. Such call also makes it hard to
+do lock-ordering analysis, because you need to look paths across classes. Therefore, open call, which is calling the alien method while
+not holding lock is more favored.</p>
+<p>Following is the solution applying open call for <code>Taxi</code> and <code>Dispatcher</code>:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Taxi</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> Point location, destination;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Dispatcher dispatcher;
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> Point <span style="color:#a6e22e">getLocation</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> location;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setLocation</span>(Point location) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">boolean</span> reachedDestination;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span> (<span style="color:#66d9ef">this</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">location</span> <span style="color:#f92672">=</span> location;
+</span></span><span style="display:flex;"><span>            reachedDestination <span style="color:#f92672">=</span> location.<span style="color:#a6e22e">equals</span>(destination);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (reachedDestination)
+</span></span><span style="display:flex;"><span>            dispatcher.<span style="color:#a6e22e">notifyAvailable</span>(<span style="color:#66d9ef">this</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@ThreadSafe</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Dispatcher</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Set<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span> taxis;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@GuardedBy</span>(<span style="color:#e6db74">&#34;this&#34;</span>) <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Set<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span> availableTaxis;
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">synchronized</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">notifyAvailable</span>(Taxi taxi) {
+</span></span><span style="display:flex;"><span>        availableTaxis.<span style="color:#a6e22e">add</span>(taxi);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> Image <span style="color:#a6e22e">getImage</span>() {
+</span></span><span style="display:flex;"><span>        Set<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span> copy;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">synchronized</span>  (<span style="color:#66d9ef">this</span>) {
+</span></span><span style="display:flex;"><span>            copy <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HashSet<span style="color:#f92672">&lt;</span>Taxi<span style="color:#f92672">&gt;</span>(taxis);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        Image image <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Image();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (Taxi t : copy)
+</span></span><span style="display:flex;"><span>            image.<span style="color:#a6e22e">drawMarker</span>(t.<span style="color:#a6e22e">getLocation</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> image;
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>As long as the class being called doesn&rsquo;t have lock-ordering, so the call to that class is.</p>
+<h2 id="15-resource-deadlocks">1.5. Resource deadlocks</h2>
+<p>Deadlock can also happen when threads waiting on resources. For example, imagine our app has two connection pools for two different databases.
+Two thread each acquire a connection from different databases and wait the connections on the other database when there is only one connection
+left on each connection pool can create deadlock. Obviously, the greater size the connection pool is the less likely the deadlock occurs.</p>
+<p>Another deadlock happens in the context of thread pool, when a task sends another task to the same <code>Executor</code> and wait for its result before
+proceeding. Once all threads get to wait like that, deadlock starvation will occur and no tasks would make progress. This implies that the bounded thread pool
+and interdependent tasks do not mix well together.</p>
+<h1 id="2-avoiding-and-diagnosing-deadlocks">2. Avoiding and diagnosing deadlocks.</h1>
+<p>A program that never acquires more than one lock at a time cannot experience lock‐ordering deadlock, if you can try to get away with it.</p>
+<p>You may want to document your lock ordering protocol (like using hash to determine order of lock).</p>
+<p>Analyzing consistency of your code lock ordering by first identify the sections of code that acquire more than one lock,
+and then perform a global analysis of all such instances. If you ensure only use open calls, this process is fairly easy. Using
+automated bytecode or source code analysis can be a good idea.</p>
+<h2 id="21-timed-lock-attempts">2.1. Timed lock attempts</h2>
+<p>Java support <code>tryLock</code> to allow developers put time out on the lock, when the thread fails to acquire the lock after the specified time, it
+returns a failure and release the lock. You can then log what the thread is trying to do for deadlock analysis, back off, wait for a while,
+possibly clearing the deadlock condition and retry the operation.</p>
+<p>However, remember that when you acquire more than 2 locks at the same time, if deadlock occurs, releasing the outer lock may not resolve the
+issue.</p>
+<h2 id="22-deadlock-analysis-and-thread-dumps">2.2. Deadlock analysis and thread dumps.</h2>
+<p>JVM provides thread dump feature to helps identify locking issues. Thread dump reports locking information, such as:</p>
+<ol>
+<li>Which locks are held by each thread.</li>
+<li>In which stack frame they were acquired.</li>
+<li>Which lock a blocked thread is waiting to acquire.</li>
+<li>Threads are being indirectly inconvenienced, those not involved in the deadlock cycle but blocked by waiting resource holding
+by deadlock threads.</li>
+</ol>
+<p>JVM does this by searching through <em>is-waiting-for</em> graph which we already mentioned.</p>
+<p>The former java version may support more limited information in thread dump, like Java 5.0, it doesn&rsquo;t support dumping explicit lock.</p>
+<p>Java version greater than 6.0 supports dumping explicit locks. You should notice that, because the nature of being associated to
+a thread and not the section of code like intrinsic lock, explicit locks when dumped may be imprecise about which stack it was acquired at.</p>
+<h1 id="3-other-liveness-hazards">3. Other liveness hazards.</h1>
+<p>Other than deadlock, there are other kinds of liveness hazard. The most common one probably is starvation where threads need certain kind of
+resource to make progress, but its request to access the resource is always denied.</p>
+<p>A typical resource to manage is CPU cycles. While the idea of tweaking thread priorities might seem like a straightforward solution –
+for instance, prioritizing the event thread in a GUI system to enhance responsiveness – it frequently proves unnecessary in most
+applications. Worse, it can lead to CPU cycle starvation for threads with lower priority. Furthermore, the varying ways operating
+systems handle priorities, and how the JVM maps to them, means this approach can undermine your application&rsquo;s platform independence,
+a generally undesirable outcome.</p>
+
+</content>
+<p>
+  
+  <a href="http://localhost:1313/my_site/blog/markdown/">#Markdown</a>
+  
+  <a href="http://localhost:1313/my_site/blog/syntax/">#Syntax</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

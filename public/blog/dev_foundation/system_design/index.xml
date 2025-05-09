@@ -2,12 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>System design learning on Hugo ʕ•ᴥ•ʔ Bear Blog</title>
-    <link>http://localhost:1313/blog/dev_foundation/system_design/</link>
+    <link>http://localhost:1313/my_site/blog/dev_foundation/system_design/</link>
     <description>Recent content in System design learning on Hugo ʕ•ᴥ•ʔ Bear Blog</description>
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2020, Jane Doe.</copyright>
     <lastBuildDate></lastBuildDate>
-    <atom:link href="http://localhost:1313/blog/dev_foundation/system_design/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/my_site/blog/dev_foundation/system_design/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

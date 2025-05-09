@@ -95,6 +95,9 @@ waiting threads needs dequeue and enqueue, involving data structure manipulation
 complicate this process. Also, special locking methods like `lockInterruptibly()`, `tryLock(time, unit)` can introduce slight overhead compared to a normal locking method as they require the OS 
 to check the interruption flag or manage timeout condition.
 
+Intrinsic lock in Java 5.0 performs much less efficient then `ReentrantLock`. However, this gap is narrow down since Java 6.0. 
+
+It is worth to refer or perform a benchmark if you are in question about a lock mechanism performance.
 ## 3. Fairness
 A common tendency among developers is to advocate for fairness in lock acquisition, aiming to prevent new threads from "barging in" and causing thread starvation.
 However, non-fair mechanisms offer their own advantages:
@@ -112,5 +115,7 @@ specific fairness requirement exists.
 The following graph compares program throughput when wrapping fair and unfair locks around `HashMap`. `ConcurrentHashMap`, which employs a more advanced locking 
 mechanism called *stripping lock*, is also illustrated in the graph:
 ![img](/my_site/lock_fairness_comparison.png)
+
+Intrinsic lock doesn't offer fair lock acquisition mechanism. However, it is good enough for most situations.
 
 ## 4. Choosing Between Synchronized and ReentrantLock
