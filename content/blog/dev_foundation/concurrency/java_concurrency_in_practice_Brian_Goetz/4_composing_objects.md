@@ -17,7 +17,14 @@ maintain them without accidentally undermining their safety guarantees.
 
 ## 1.1. Gathering Synchronization Requirements
 *Invariants* are defined as constraints that make a certain state of the object invalid or valid. For example, `NumberRange` instance
-has two states upper and lower ranges, the lower-range value must always is lower than the upper one.
+has two states `upper` and `lower` that represents an integer range, the lower-range value must always is lower than the upper one.
+
+```java
+public class NumberRange {
+    private final int upper;
+    private final int lower;
+}
+```
 
 *Post-conditions* are defined as a state an object must have when it is transformed from the current state. For example, 
 If the current state of a Counter is 17, the only valid next state is 18.
@@ -34,17 +41,21 @@ the duration of any operation that accesses the related variables.
 > By using a constant field you limit the state space an object can have, which 
 > is easier to deal with when it comes to synchronization.
 
-
 ## 1.2. State-dependent operations
-An operation is said to be state-dependent when it can not be applied to the current state of an object if the object is in certain
-states (*preconditions*).
+It gets trickier when you manage state transition of an object in multithreaded environment as the state of the object is
+determined by multiple threads, which means you must ensure two things:
+1. As mentioned, the state reflects the expectations as it is meant to be.
+2. You must ensure the thread can take actions to transition state. Actions mentioned here are these that only can be applied to the 
+current state of an object if the object is in certain states (*preconditions*), what is deemed as state-dependent
 
 For example, if you call `popElement()` when a queue is empty in a single-threading environment, it will throw error.
-In multi-threading environment, however, if you dedicate a thread to wait there to `popElement` once a queue is not empty and do the task
-on that element, there is chance other threads will add an element to the queue, which turn the *precondition* to `true`.
+In multi-threading environment, however, if you dedicate a thread to wait there to `popElement` once a queue is not empty, 
+there is chance other threads will add an element to the queue, which turn the *precondition* to `true`. In this case,
+if no thread bother to put elements into the queue, then deadlock will occur. Of course this is just a simple assumption, in a
+complex system, there is a chance you may miss fulling this condition so that all threads have the opportunity to run.
 
-In these cases, to make thread continue to run after a condition is met, we often:
-+ Use low-level mechanisms such as `wait` and `notify` (covered in chapter 14).
+To make another thread continue to run after a condition is fulfilled by another thread, we often:
++ Use low-level mechanisms such as `wait` and `notify` (covered in chapter 14) - the mechanism to roll up the sleeping threads.
 + Use existing library classes, such as blocking queues or semaphores (covered in chapter 5) <- this is a more straight forward approach.
 
 # 2. Instance confinement
@@ -162,7 +173,7 @@ public class VisualComponent {
 `VisualComponent` can delegate thread-safety to them.
 
 ## 3.3. When delegation fails
-In contrast, in case the encapsulating class imposes the constraint on states, 
+In contrast, in case the encapsulating class imposes invariants on states, 
 the code will be not thread-safe unless you use synchronization. For example
 
 ```java
@@ -195,15 +206,6 @@ The `NumberRange` above impose a constraint that `lower` should be lower than `u
 such as `setLower` or `setUpper` potentially create a bug, because, for example in `setLower()` method
 after checking `upper.get()`,  other threads can come and modify immediately `upper`, making
 `lower` can have a value that is greater than `upper`.
-
-## 3.4. Publishing underlying state variables.
-A class con impose a constraint that limits the state space of its variables, like `Counter` class
-requires the `count` variable to not be negative. In this case, if we publish `count` as a mutable object
-, client code can make a whole instance of a class invalid.
-
-If there is no constraint imposing, for example, imagining `temperature`, client code can change this
-variable without affecting, and thus can be safely published.
-
 
 # 4. Adding functionality to existing thread-safe classes.
 Using the existing class or methods of that class can save effort on maintenance and testing.
@@ -252,7 +254,7 @@ public class ListHelper<E> {
 }
 ```
 
-You must pay close attention to what lock the is using, in this case, the lock have to be used is 
+You must pay close attention to what lock the class is using, in this case, the lock have to be used is 
 `list` object which is detailed in the document of `Collections.synchronizedLis`
 
 You might be able to see several drawbacks:
@@ -269,7 +271,7 @@ public class ImprovedList<T> implements List<T> {
     public ImprovedList(List<T> list) { this.list = list; }
     public synchronized boolean putIfAbsent(T x) {
         boolean contains = list.contains(x);
-        if (contains)
+        if (!contains)
             list.add(x);
         return !contains;
     }
@@ -277,6 +279,12 @@ public class ImprovedList<T> implements List<T> {
     public synchronized void clear() { list.clear(); }
 }
 ```
+
+`ImprovedList` expands the functionality of `List` while making it thread safe with a more maintainable and safer way by:
+1. Managing its own intrinsic lock regardless of what lock the default `List` is using.
+2. Reimplementing all of `List` methods, like a proxy of the default `List`.
+
+Of course to make the new class thread-safe, you must ensure the class you extend is thread-safe by its own lock.
 
 # 5. Documenting synchronization policies
 
@@ -287,7 +295,7 @@ Most classes don't offer any clue regarding concurrent policy, including
 Java technology specifications, such as servlets and JDBC. In this case,
 assuming class are thread-safe or acquire an arbitrary lock is risky.
 
-When developing a class, you are responsible to document concurrent policy, in
+When developing a class, you are responsible to document concurrent policies, in
 a way that minimizes as many as assumptions for your colleagues and customers.
 
 In some cases, we can imply the class is thread-safe by imaging how the
