@@ -48,6 +48,8 @@ For example:
 
 ```java
 public class ThisEscape {
+    public final int variable;
+    
     public class EventListener{}
     
     public ThisEscape(EventSource source) {
@@ -60,8 +62,9 @@ public class ThisEscape {
 }
 ```
 
+In the above code, you don't know what `source.registerListener` will do with the current `ThisEscape` instance states, which can be accessed through
+the `EventListener` instance, a potential risks to cause race condition.
 ## 1.1 Safe construction practices
-
 The `ThisEscape` class above also compromise the rule that never publishes the object reference before
 the construction of the object haven't been done. Because the object might be incompletely constructed.
 
@@ -82,6 +85,8 @@ public class ThisEscape {
                 doSomething(e);
             } 
         };
+        
+        // Some initialization code.
     } 
     
     public void registerEventSource(EventSource source){
@@ -95,8 +100,8 @@ Immutability is also a great measure to ensure thread-safety, once an object is 
 multiple writes from threads might cause inconsistent state. Following technique is an example.
 
 ## 2.1. Final fields
-As described in section 1 in Java Programming Language blog, the following server that supports to cache factors of the last requested
-values produce an atomic issue, caused by a thread read `lastFactors` while another thread attempt to modify it.
+The following server that supports to cache factors of the last requested values produce an atomic issue, caused by a
+thread read `lastFactors` while another thread attempt to modify it.
 ```java
 @NotThreadSafe
 public class UnsafeCachingFactorizer implements Servlet {
@@ -159,12 +164,12 @@ public class VolatileCachedFactorizer implements Servlet {
 }
 ```
 
-This way, the latest factors are ensured to not be altered by another thread, once the instance `OneValueCache` storing it, is referenced.
+This way, the latest factors are ensured to not be altered by another thread, once the instance `OneValueCache` storing it, it is already referenced.
 Removing the need of using lock, which can enhance the system performance, as the cost of allocation memory is typically cheaper.
 
 # 3. Safe publication
 ## 3.1. Improper publication
-Because of the visibility problem, when a thread write to a field, multiple values could be returned, leading the program to the inconsistent
+Because of the visibility problem, when a thread writes to a field, multiple values could be returned, leading the program to the inconsistent
 state. Look at following code:
 
 ```java
@@ -180,10 +185,11 @@ public class Holder {
     private int n;
     public Holder(int n) { this.n = n; }
     public void assertSanity() {
-        if (n != n)
+        if (n != n){
             throw new AssertionError("This statement is false.");
-        } 
+        }ß
     }
+}
 ```
 
 The field `holder` of the class, due to Java Memory models, might have many values to return, each observable by different threads. 
